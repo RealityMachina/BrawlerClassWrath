@@ -338,6 +338,7 @@ namespace BrawlerClassWrath.Extensions {
         public static void SetNameDescription(this BlueprintUnitFact feature, BlueprintUnitFact other) {
             feature.m_DisplayName = other.m_DisplayName;
             feature.m_Description = other.m_Description;
+            feature.m_DescriptionShort = other.m_DescriptionShort;
         }
 
         public static void SetName(this BlueprintUnitFact feature, LocalizedString name) {
@@ -350,16 +351,19 @@ namespace BrawlerClassWrath.Extensions {
 
         public static void SetDescriptionUntagged(this BlueprintUnitFact feature, String description) {
             feature.m_Description = Helpers.CreateString(feature.name + ".Description", description);
+            feature.m_DescriptionShort = feature.m_Description;
         }
 
         public static void SetDescription(this BlueprintUnitFact feature, LocalizedString description) {
             feature.m_Description = description;
+            feature.m_DescriptionShort = feature.m_Description;
             //blueprintUnitFact_set_Description(feature) = description;
         }
 
         public static void SetDescription(this BlueprintUnitFact feature, String description) {
             var taggedDescription = DescriptionTools.TagEncyclopediaEntries(description);
             feature.m_Description = Helpers.CreateString(feature.name + ".Description", taggedDescription);
+            feature.m_DescriptionShort = feature.m_Description;
         }
 
         public static bool HasFeatureWithId(this LevelEntry level, String id) {
