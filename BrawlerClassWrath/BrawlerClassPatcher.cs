@@ -199,6 +199,7 @@ namespace BrawlerClassWrath
                 c.IsPermanent = true;
                 c.IsMonkUnarmedStrike = true;
             });
+
             //we add class to progression after to prevent monk from increasing unarmed damage using brawler class levels for brawler archetypes that remove unarmed strike feature
           //  ClassToProgression.addClassToFeat(brawler_class, new BlueprintArchetype[] { }, ClassToProgression.DomainSpellsType.NoSpells, unarmed_strike, monk_class);
           // RM: checked the original mod and the above appears to done nothing with unarmed strike????
@@ -241,29 +242,29 @@ namespace BrawlerClassWrath
 
 
 
-            brawler_progression.LevelEntries = new LevelEntry[] {Helpers.LevelEntry(1, brawler_proficiencies, brawlers_cunning, unarmed_strike, improved_unarmed_strike,
+            brawler_progression.LevelEntries = new LevelEntry[] {Helpers.LevelEntry(1, brawler_proficiencies, brawlers_cunning,  improved_unarmed_strike, unarmed_strike,
                                                                                        martial_training, combat_feat,
                                                                                        Resources.GetBlueprint<BlueprintFeature>("d3e6275cfa6e7a04b9213b7b292a011c"), // ray calculate feature
                                                                                        Resources.GetBlueprint<BlueprintFeature>("62ef1cdb90f1d654d996556669caf7fa")), // touch calculate feature                                                                                      
                                                                     Helpers.LevelEntry(2, brawlers_flurry, combat_feat),
                                                                     Helpers.LevelEntry(3, maneuver_training[0]),
-                                                                    Helpers.LevelEntry(4, ac_bonus, knockout, combat_feat),
+                                                                    Helpers.LevelEntry(4, ac_bonus, knockout, combat_feat, Resources.GetBlueprint<BlueprintFeature>("8267a0695a4df3f4ca508499e6164b98")), //1d8 damage with fists
                                                                     Helpers.LevelEntry(5, brawlers_strike_magic, close_weapon_mastery),
                                                                     Helpers.LevelEntry(6, combat_feat),
                                                                     Helpers.LevelEntry(7, maneuver_training[1]),
-                                                                    Helpers.LevelEntry(8, combat_feat),
+                                                                    Helpers.LevelEntry(8, combat_feat, Resources.GetBlueprint<BlueprintFeature>("f790a36b5d6f85a45a41244f50b947ca")), //1d10
                                                                     Helpers.LevelEntry(9, brawlers_strike_cold_iron_and_silver),
                                                                     Helpers.LevelEntry(10, combat_feat),
                                                                     Helpers.LevelEntry(11, maneuver_training[2], brawlers_flurry11),
-                                                                    Helpers.LevelEntry(12, combat_feat, brawlers_strike_alignment),
+                                                                    Helpers.LevelEntry(12, combat_feat, brawlers_strike_alignment, Resources.GetBlueprint<BlueprintFeature>("b3889f445dbe42948b8bb1ba02e6d949")), //2d6
                                                                     Helpers.LevelEntry(13),
                                                                     Helpers.LevelEntry(14, combat_feat),
                                                                     Helpers.LevelEntry(15, maneuver_training[3]),
-                                                                    Helpers.LevelEntry(16, combat_feat, awesome_blow),
+                                                                    Helpers.LevelEntry(16, combat_feat, awesome_blow, Resources.GetBlueprint<BlueprintFeature>("078636a2ce835e44394bb49a930da230")), //2d8
                                                                     Helpers.LevelEntry(17, brawlers_strike_adamantine),
                                                                     Helpers.LevelEntry(18, combat_feat),
                                                                     Helpers.LevelEntry(19, maneuver_training[4]),
-                                                                    Helpers.LevelEntry(20, combat_feat, awesome_blow_improved, perfect_warrior)
+                                                                    Helpers.LevelEntry(20, combat_feat, awesome_blow_improved, perfect_warrior, Resources.GetBlueprint<BlueprintFeature>("df38e56fa8b3f0f469d55f9aa26b3f5c")) //2d10
                                                                     };
 
             brawler_progression.m_UIDeterminatorsGroup = new BlueprintFeatureBaseReference[] {
@@ -422,6 +423,7 @@ namespace BrawlerClassWrath
             knockout_resource = CommonHelpers.CreateAbilityResource("RMBrawlerKnockoutResource", "", "", "", null);
             knockout_resource.SetIncreasedByLevelStartPlusDivStep(1, 10, 1, 6, 1, 0, 0.0f, getBrawlerArray());
 
+
             var effect_buff = Helpers.CreateBuff("RMBrawlerKnockoutBuff", bp =>
             {
 
@@ -508,6 +510,7 @@ namespace BrawlerClassWrath
                 a.m_NewFact = ac_bonus_feature.ToReference<BlueprintUnitFactReference>();
                 a.required_armor = new ArmorProficiencyGroup[] { ArmorProficiencyGroup.Light, ArmorProficiencyGroup.None };
             }));
+            ac_bonus.ReapplyOnLevelUp = true;
         }
 
         static void createManeuverTraining()
@@ -572,7 +575,12 @@ namespace BrawlerClassWrath
                     {
                         for (int k = 0; k < i; k++)
                         {
-                            feat.AddComponent(CommonHelpers.PrerequisiteNoFeature(maneuver_training[k].AllFeatures[j]));
+                            var component = CommonHelpers.PrerequisiteNoFeature(maneuver_training[k].AllFeatures[j]);
+                            if(component != null)
+                            {
+                                feat.AddComponent(component);
+                            }
+                            
                         }
                     }
                     if (j + 1 != maneuvers.Length || i + 1 == maneuver_training.Length)
@@ -605,6 +613,8 @@ namespace BrawlerClassWrath
              "If the combat maneuver check succeeds, the opponent takes damage as if the brawler hit it with the close weapon she is wielding or an unarmed strike," +
              " it is knocked flying 10 feet in a direction of attack.");
             awesomeAbility.m_Icon = Helpers.GetIcon("bdf58317985383540920c723db07aa3b"); //pummeling bully
+            awesomeAbility.LocalizedDuration = Main.MakeLocalizedString($"{awesomeAbility.name}.Duration", "");
+            awesomeAbility.LocalizedSavingThrow = Main.MakeLocalizedString($"{awesomeAbility.name}.SavingThrow", "");
             awesomeAbility.Type = AbilityType.Special;
             awesomeAbility.CanTargetEnemies = true;
             awesomeAbility.CanTargetSelf = false;
@@ -623,7 +633,7 @@ namespace BrawlerClassWrath
                 );
             });
 
-            awesomeAbility.AddComponents(Helpers.Create<NewMechanics.CombatManeuverMechanics.AbilityTargetNotBiggerUnlessFact>(a => a.fact = awesome_blow_improved),
+            awesomeAbility.AddComponents(Helpers.Create<AbilityTargetNotBiggerUnlessFact>(a => a.fact = awesome_blow_improved),
                                   Helpers.Create<AbilityCasterMainWeaponGroupCheck>(a =>
                                   {
                                       a.groups = new WeaponFighterGroup[] { WeaponFighterGroup.Close };
@@ -758,8 +768,13 @@ namespace BrawlerClassWrath
  
 
             brawlers_flurry.AddComponents(Helpers.Create<AddBrawlerPartUnitFact>(a => a.groups = new WeaponFighterGroup[] { WeaponFighterGroup.Monk, WeaponFighterGroup.Close }),
-                              Helpers.Create<AddBrawlerFlurryExtraAttacks>()
-                             );
+                              Helpers.Create<AddBrawlerFlurryExtraAttacks>(),
+                             Helpers.Create<AddFacts>(c => {
+                                 c.m_Facts = new BlueprintUnitFactReference[]
+                                 {
+                                     toggle.ToReference<BlueprintUnitFactReference>()
+                                 };
+                             }));
             brawlers_flurry11.AddComponents(Helpers.Create<AddBrawlerFlurryExtraAttacks>());
 
             brawlers_flurry.IsClassFeature = true;
@@ -821,17 +836,29 @@ namespace BrawlerClassWrath
                 {
                     return false;
                 }
-
                 if (!Owner.Body.PrimaryHand.HasWeapon || !Owner.Body.SecondaryHand.HasWeapon)
                 {
                     return false;
                 }
-
                 var weapon1 = Owner.Body.PrimaryHand.MaybeWeapon;
-                var weapon2 = Owner.Body.SecondaryHand.MaybeWeapon;
+                var weapon2 = Owner.Body?.SecondaryHand?.MaybeWeapon;
+                if (weapon_groups == null)
+                {
+                    Initialize(new WeaponFighterGroup[] { WeaponFighterGroup.Monk , WeaponFighterGroup.Close });
+                }
 
-                return weapon_groups.Contains(weapon1.Blueprint.FighterGroup)       
-                    && weapon_groups.Contains(weapon2.Blueprint.FighterGroup);
+                foreach (var group in weapon_groups)
+                {
+                    if(weapon1.Blueprint.FighterGroup.Contains(group) && weapon2.Blueprint.FighterGroup.Contains(group))
+                    {
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                }
+                return false;
             }
         }
 
@@ -841,11 +868,12 @@ namespace BrawlerClassWrath
         [HarmonyPriority(Priority.First)]
         [HarmonyPatch(typeof(TwoWeaponFightingAttacks))]
         [HarmonyPatch("OnEventAboutToTrigger", MethodType.Normal)]
-        [HarmonyPatch(new Type[] { typeof(RuleCalculateAttacksCount) })]
+        //[HarmonyPatch(new Type[] { typeof(RuleCalculateAttacksCount) })]
         class TwoWeaponFightingAttacks__OnEventAboutToTrigger__Patch
         {
             static bool Prefix(TwoWeaponFightingAttacks __instance, RuleCalculateAttacksCount evt)
             {
+        
                 var maybeWeapon1 = evt.Initiator.Body.PrimaryHand?.MaybeWeapon;
                 var maybeWeapon2 = evt.Initiator.Body.SecondaryHand?.MaybeWeapon;
                 if (!evt.Initiator.Body.PrimaryHand.HasWeapon
@@ -855,23 +883,30 @@ namespace BrawlerClassWrath
                     )
                     return true; //let original function work?
 
+                
                 var brawler_part = evt.Initiator.Get<UnitPartBrawler>();
-                if ((brawler_part?.CheckTwoWeaponFlurry()).GetValueOrDefault())
+             
+                if (brawler_part != null && (brawler_part.CheckTwoWeaponFlurry()))
                 {
+                  
                     for (int i = 1; i < brawler_part.GetNumExtraAttacks(); i++)
                     {
+                      
                         ++evt.Result.SecondaryHand.AdditionalAttacks;
                     }
+               
                 }
                 else if (__instance.Fact.GetRank() > 1)
                 {
+                   
                     for (int i = 2; i < __instance.Fact.GetRank(); i++)
                     {
+                    
                         ++evt.Result.SecondaryHand.PenalizedAttacks;
                     }
                 }
-
-                return false;
+         
+                return true;
             }
         }
 

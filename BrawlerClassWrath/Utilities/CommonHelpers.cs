@@ -365,24 +365,23 @@ namespace BrawlerClassWrath.Utilities
             int startingLevel, int startingIncrease, int levelStep, int perStepIncrease, int minClassLevelIncrease, float otherClassesModifier,
             BlueprintCharacterClass[] classes, BlueprintArchetype[] archetypes = null)
         {
-            var amount = getMaxAmount(resource);
+            var amount = new BlueprintAbilityResource.Amount();
             var classRef = new BlueprintCharacterClassReference[classes.Count()];
             for (var i = 0; i < classRef.Length; i++)
             {
                 classRef[i] = classes[i].ToReference<BlueprintCharacterClassReference>();
             }
-            Helpers.SetField(amount, "BaseValue", baseValue);
-            Helpers.SetField(amount, "IncreasedByLevelStartPlusDivStep", true);
-            Helpers.SetField(amount, "StartingLevel", startingLevel);
-            Helpers.SetField(amount, "StartingIncrease", startingIncrease);
-            Helpers.SetField(amount, "LevelStep", levelStep);
-            Helpers.SetField(amount, "PerStepIncrease", perStepIncrease);
-            Helpers.SetField(amount, "MinClassLevelIncrease", minClassLevelIncrease);
-            Helpers.SetField(amount, "OtherClassesModifier", otherClassesModifier);
-            Helpers.SetField(amount, "IncreasedByLevel", false);
-            Helpers.SetField(amount, "LevelIncrease", 0);
-
-            Helpers.SetField(amount, "m_ClassDiv", classRef);
+            amount.BaseValue = baseValue;
+            amount.IncreasedByLevelStartPlusDivStep = true;
+            amount.StartingLevel = startingLevel;
+            amount.StartingIncrease = startingIncrease;
+            amount.LevelStep = levelStep;
+            amount.PerStepIncrease = perStepIncrease;
+            amount.MinClassLevelIncrease = minClassLevelIncrease;
+            amount.OtherClassesModifier = otherClassesModifier;
+            amount.IncreasedByLevel = false;
+            amount.LevelIncrease = 0;
+            amount.m_ClassDiv = classRef;
             var archRefs = Array.Empty<BlueprintArchetypeReference>();
             var emptyArchetypes = Array.Empty<BlueprintArchetypeReference>();
             if (archetypes != null)
@@ -394,15 +393,19 @@ namespace BrawlerClassWrath.Utilities
                 }
                 
             }
-            Helpers.SetField(amount, "m_ArchetypesDiv", archRefs ?? emptyArchetypes);
-
+            amount.m_ArchetypesDiv = archRefs ?? emptyArchetypes;
+ 
             // Enusre arrays are at least initialized to empty.
-            var fieldName = "m_Class";
-            if (Helpers.GetField(amount, fieldName) == null) Helpers.SetField(amount, fieldName, Array.Empty<BlueprintCharacterClassReference>());
-            fieldName = "m_Archetypes";
-            if (Helpers.GetField(amount, fieldName) == null) Helpers.SetField(amount, fieldName, emptyArchetypes);
-
-            setMaxAmount(resource) = amount; 
+            if(amount.m_Class == null)
+            {
+                amount.m_Class = Array.Empty<BlueprintCharacterClassReference>();
+            }
+            if (amount.m_Archetypes == null)
+            {
+                amount.m_Archetypes = emptyArchetypes;
+            }
+  
+            resource.m_MaxAmount = amount;
         }
         public static BlueprintAbilityResource CreateAbilityResource(string name, string displayName, string description, string guid, UnityEngine.Sprite icon,
             params BlueprintComponent[] components)
@@ -441,7 +444,15 @@ namespace BrawlerClassWrath.Utilities
             var result = Helpers.Create<PrerequisiteNoFeature>();
             result.m_Feature = feat.ToReference<BlueprintFeatureReference>();
             result.Group = any ? Prerequisite.GroupType.Any : Prerequisite.GroupType.All;
-            return result;
+
+            if(result.m_Feature != null)
+            {
+                return result;
+            }
+            else
+            {
+                return null;
+            }
         }
         static public string getNumExtension(int i)
         {

@@ -298,8 +298,22 @@ namespace BrawlerClassWrath.Utilities {
                 m_Class = classes == null ? Array.Empty<BlueprintCharacterClassReference>() : classes.Select(c => c.ToReference<BlueprintCharacterClassReference>()).ToArray(),
                 Archetype = archetype.ToReference<BlueprintArchetypeReference>(),
                 m_AdditionalArchetypes = archetypes == null ? Array.Empty<BlueprintArchetypeReference>() : archetypes.Select(c => c.ToReference<BlueprintArchetypeReference>()).ToArray(),
-                m_FeatureList = featureList == null ? Array.Empty<BlueprintFeatureReference>() : featureList.Select(c => c.ToReference<BlueprintFeatureReference>()).ToArray()
+                m_FeatureList = featureList == null ? Array.Empty<BlueprintFeatureReference>() : featureList.Select(c => c.ToReference<BlueprintFeatureReference>()).ToArray(),
+
             };
+            if(customProgression != null)
+            {
+                var i = customProgression.Count();
+                var newCustomProgression = new ContextRankConfig.CustomProgressionItem[i];
+                i = 0;
+                foreach (var prog in customProgression)
+                {
+
+                    newCustomProgression[i] = new ContextRankConfig.CustomProgressionItem { BaseValue = prog.Item1, ProgressionValue = prog.Item2 };
+                    i++;
+                }
+                config.m_CustomProgression = newCustomProgression;
+            }
 #if false
             var config = Helpers.Create<ContextRankConfig>(bp => {
                 bp.m_Type = type;

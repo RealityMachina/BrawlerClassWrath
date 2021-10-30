@@ -92,7 +92,7 @@ namespace BrawlerClassWrath.NewMechanics
         public bool use_kineticist_main_stat;
         public StatType StatType = StatType.Charisma;
         public BlueprintCharacterClass[] CharacterClasses = new BlueprintCharacterClass[0];
-        public BlueprintArchetype[] archetypes = new BlueprintArchetype[0];
+        public BlueprintArchetype[] archetypes = null;
         public BlueprintUnitProperty property = null;
 
         public override AbilityParams Calculate(MechanicsContext context)
@@ -100,6 +100,7 @@ namespace BrawlerClassWrath.NewMechanics
             UnitEntityData maybeCaster = context?.MaybeCaster;
             if (maybeCaster == null)
             {
+
                 return context?.Params;
             }
             StatType statType = this.StatType;
@@ -109,11 +110,13 @@ namespace BrawlerClassWrath.NewMechanics
                StatType? mainStatType = unitPartKineticist?.MainStatType;
                 statType = !mainStatType.HasValue ? this.StatType : mainStatType.Value;
             }
-
+     
             var stat_property_getter = property?.GetComponent<StatPropertyValueGetter>();
             if (stat_property_getter != null)
             {
+
                 statType = stat_property_getter.GetStat(maybeCaster);
+     
             }
 
             AbilityData ability = context.SourceAbilityContext?.Ability;
@@ -123,14 +126,17 @@ namespace BrawlerClassWrath.NewMechanics
             int class_level = 0;
             foreach (var c in this.CharacterClasses)
             {
-                var class_archetypes = archetypes.Where(a => a.GetParentClass() == c);
+
+                var class_archetypes = archetypes?.Where(a => a.GetParentClass() == c);
 
                 if (class_archetypes == null || class_archetypes.Any(a => maybeCaster.Descriptor.Progression.IsArchetype(a)))
                 {
+
                     class_level += maybeCaster.Descriptor.Progression.GetClassLevel(c);
                 }
 
             }
+
             rule.ReplaceCasterLevel = new int?(class_level);
             rule.ReplaceSpellLevel = new int?(class_level / 2);
             return context.TriggerRule<RuleCalculateAbilityParams>(rule).Result;
@@ -185,6 +191,7 @@ namespace BrawlerClassWrath.NewMechanics
                 int bonus = unit.Stats.GetStat<ModifiableValueAttributeStat>(s).Bonus;
                 if (bonus > val)
                 {
+
                     val = bonus;
                 }
             }
@@ -201,6 +208,7 @@ namespace BrawlerClassWrath.NewMechanics
                 int bonus = unit.Stats.GetStat<ModifiableValueAttributeStat>(s).Bonus;
                 if (bonus > val)
                 {
+
                     val = bonus;
                     stat = s;
                 }
@@ -259,7 +267,15 @@ namespace BrawlerClassWrath.NewMechanics
             {
                 return caster.Body.PrimaryHand.Weapon.Blueprint.IsTwoHanded && caster.Body.PrimaryHand.Weapon.Blueprint.IsMelee;
             }
-            return (groups.Contains(caster.Body.PrimaryHand.Weapon.Blueprint.Type.FighterGroup) || extra_categories.Contains(caster.Body.PrimaryHand.Weapon.Blueprint.Category));
+
+            foreach (var group in groups)
+            {
+                if(caster.Body.PrimaryHand.Weapon.Blueprint.Type.FighterGroup.Contains(group) || extra_categories.Contains(caster.Body.PrimaryHand.Weapon.Blueprint.Category))
+                {
+                    return true;
+                }
+            }
+            return false;
 
         }
 
@@ -313,6 +329,7 @@ namespace BrawlerClassWrath.NewMechanics
         // Token: 0x0600C4B1 RID: 50353 RVA: 0x00315C1A File Offset: 0x00313E1A
         private void CheckEligibility()
         {
+
             if (!Owner.Body.IsPolymorphed) // can't be polymorphed
             {
 
@@ -328,11 +345,11 @@ namespace BrawlerClassWrath.NewMechanics
 
                 if (armor_ok) // requirements met...
                 {
-                    if (base.Owner.Body.Armor.HasArmor) // care about forbidden armor if it comes up later
-                    {
+                 
+
                         this.AddFact();
                         return;
-                    }
+                    
                 }
 
             }

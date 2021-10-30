@@ -44,7 +44,7 @@ namespace BrawlerClassWrath.NewMechanics
     [AllowedOn(typeof(BlueprintUnitFact))]
     [AllowMultipleComponents]
     [TypeId("1f062a8356fc4927893f2d44a9135769")]
-    public class SpecificWeaponGroupOrFeralCombatFeatureUnlock : UnitFactComponentDelegate<MonkNoArmorAndMonkWeaponFeatureUnlockData>, 
+    public class SpecificWeaponGroupOrFeralCombatFeatureUnlock : UnitFactComponentDelegate<HasArmorFeatureUnlockData>, 
         IUnitActiveEquipmentSetHandler, IGlobalSubscriber, ISubscriber, IUnitEquipmentHandler, IUnitBuffHandler
     {
         public BlueprintUnitFact NewFact
@@ -54,11 +54,13 @@ namespace BrawlerClassWrath.NewMechanics
                 BlueprintUnitFactReference newFact = this.m_NewFact;
                 if (newFact == null)
                 {
+                    Main.Log("No new fact, only returning null.");
                     return null;
                 }
                 return newFact.Get();
             }
         }
+        [SerializeField]
         public WeaponFighterGroup[] weapon_groups;
 
         [SerializeField]
@@ -105,27 +107,56 @@ namespace BrawlerClassWrath.NewMechanics
         }
         public override void OnDeactivate()
         {
+
             RemoveFact();
         }
 
         public void HandleUnitChangeActiveEquipmentSet(UnitDescriptor unit)
         {
+
             CheckEligibility();
         }
 
         public void CheckEligibility()
         {
-            if (weapon_groups.Contains(this.Owner.Body.PrimaryHand.Weapon.Blueprint.FighterGroup) //so if our primary
-                && (this.Owner.Body?.SecondaryHand?.MaybeWeapon == null
-                   || (this.Owner.Body.SecondaryHand.MaybeWeapon.Blueprint.IsNatural
-                       && (!this.Owner.Body.SecondaryHand.MaybeWeapon.Blueprint.IsUnarmed ))
-                      ) //ensure that off-hand is empty since flurry normally does not allow off-hand attacks
-                )
+
+
+            if (weapon_groups == null )
             {
-                AddFact();
+
             }
-            else
+            else if (NewFact == null)
             {
+
+            }
+            bool FoundGroup = false;
+            foreach (var group in weapon_groups)
+            {
+                if (this.Owner.Body.PrimaryHand.Weapon.Blueprint.FighterGroup.Contains(group) 
+                    && (this.Owner.Body?.SecondaryHand?.MaybeWeapon == null
+                       || (this.Owner.Body.SecondaryHand.MaybeWeapon.Blueprint.IsNatural
+                           && (this.Owner.Body.SecondaryHand.MaybeWeapon.Blueprint.IsUnarmed))
+                          ) //ensure that off-hand is empty since flurry normally does not allow off-hand attacks
+                    )
+                {
+                    FoundGroup = true;
+
+                    AddFact();
+                    break;
+                }
+                else if (this.Owner.Body.PrimaryHand.Weapon.Blueprint.FighterGroup.Contains(group)
+                    && (this.Owner.Body.SecondaryHand.Weapon.Blueprint.FighterGroup.Contains(group) || this.Owner.Body?.SecondaryHand?.MaybeWeapon == null))
+                {
+                    FoundGroup = true;
+
+                    AddFact();
+                    break;
+                }
+
+            }
+            if(!FoundGroup)
+            {
+
                 RemoveFact();
             }
         }
@@ -133,28 +164,47 @@ namespace BrawlerClassWrath.NewMechanics
         public void AddFact()
         {
             if (Data.AppliedFact != null)
+            {
+
                 return;
+            }
             Data.AppliedFact = Owner.AddFact(NewFact, null, null);
         }
 
         public void RemoveFact()
         {
             if (Data.AppliedFact == null)
+            {
+ 
                 return;
+            }
             Owner.RemoveFact(Data.AppliedFact);
             Data.AppliedFact = null;
         }
 
         public void HandleEquipmentSlotUpdated(ItemSlot slot, ItemEntity previousItem)
         {
-            if (slot.Owner != this.Owner)
+            if (slot.Owner != Owner) // INVESTIGATION: the original slot.owner != Owner gave false negatives. Why? 
+            {
+                //Main.Log("Item being removed is " + previousItem?.Name);
+                //Main.Log("Is slot owner main char" + slot.Owner.IsMainCharacter.ToString());
+                //Main.Log("Slot owner is " + slot.Owner.CharacterName);
+
+                //Main.Log("Is fact owner main char" + Owner.IsMainCharacter.ToString());
+                //Main.Log("fact owner is " + Owner.CharacterName);
                 return;
-            this.CheckEligibility();
+            }
+
+            //if (!slot.Active)
+            //{
+            //    return;
+            //}
+            this.CheckEligibility();                    
         }
 
-        public new void OnTurnOn()
-        {
-            this.CheckEligibility();
-        }
+        //public new void OnTurnOn()
+        //{
+        //    this.CheckEligibility();
+        //}
     }
 }
