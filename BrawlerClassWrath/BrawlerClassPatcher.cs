@@ -46,6 +46,7 @@ using Kingmaker.UnitLogic.Mechanics.Components;
 using Kingmaker.RuleSystem;
 using Kingmaker.Enums.Damage;
 using Kingmaker.UnitLogic.Alignments;
+using System.Collections.Generic;
 
 namespace BrawlerClassWrath
 {
@@ -76,7 +77,15 @@ namespace BrawlerClassWrath
         static public BlueprintFeature perfect_warrior;
         static public BlueprintCharacterClass BrawlerClass;
 
-        
+        static public BlueprintArchetype wild_child;
+        static public BlueprintFeatureSelection animal_companion;
+        static public BlueprintFeatureSelection wildchild_mountedcombat_feats;
+
+        static public BlueprintArchetype venomfist;
+        static public BlueprintFeature[] venomous_strike = new BlueprintFeature[5];
+
+        static public BlueprintArchetype snakebite_striker;
+        static public BlueprintFeature opportunist;
         static void Postfix()
         {
             if (Initialized) return;
@@ -149,7 +158,15 @@ namespace BrawlerClassWrath
                 brawlers_flurry.ToReference<BlueprintFeatureReference>(),
                 perfect_warrior.ToReference<BlueprintFeatureReference>()
             };
-
+            createWildChild();
+          //  createExemplar();
+           // createMutagenicMauler();
+            createSnakebiteStriker();
+           // createSteelBreaker();
+            createVenomfist();
+            BrawlerClass.m_Archetypes = new BlueprintArchetypeReference[] { wild_child.ToReference<BlueprintArchetypeReference>(),
+                venomfist.ToReference<BlueprintArchetypeReference>(),
+                snakebite_striker.ToReference<BlueprintArchetypeReference>()};
             Helpers.RegisterClass(BrawlerClass);
         }
 
@@ -190,7 +207,7 @@ namespace BrawlerClassWrath
 
             var fist1d6_monk = Resources.GetBlueprint<BlueprintFeature>("c3fbeb2ffebaaa64aa38ce7a0bb18fb0");
             unarmed_strike = Helpers.CreateBlueprint<BlueprintFeature>("RMBrawlerUnarmedStrikeFeature");
-            unarmed_strike.SetNameDescription("Unarmed Strike", "At 1st level, a brawler gains Improved Unarmed Strike as a bonus feat. The damage dealt by a Medium brawler's unarmed strike increases with level: 1d6 at levels 1–3, 1d8 at levels 4–7, 1d10 at levels 8–11, 2d6 at levels 12–15, 2d8 at levels 16–19, and 2d10 at level 20.\nIf the sacred fist is Small, his unarmed strike damage increases as follows: 1d4 at levels 1–3, 1d6 at levels 4–7, 1d8 at levels 8–11, 1d10 at levels 12–15, 2d6 at levels 16–19, and 2d8 at level 20.\nIf the brawler is Large, his unarmed strike damage increases as follows: 1d8 at levels 1–3, 2d6 at levels 4–7, 2d8 at levels 8–11, 3d6 at levels 12–15, 3d8 at levels 16–19, and 4d8 at level 20.");
+            unarmed_strike.SetNameDescription("Unarmed Strike", "At 1st level, a brawler gains Improved Unarmed Strike as a bonus feat. The damage dealt by a Medium brawler's unarmed strike increases with level: 1d6 at levels 1–3, 1d8 at levels 4–7, 1d10 at levels 8–11, 2d6 at levels 12–15, 2d8 at levels 16–19, and 2d10 at level 20.\nIf the brawler is Small, his unarmed strike damage increases as follows: 1d4 at levels 1–3, 1d6 at levels 4–7, 1d8 at levels 8–11, 1d10 at levels 12–15, 2d6 at levels 16–19, and 2d8 at level 20.\nIf the brawler is Large, his unarmed strike damage increases as follows: 1d8 at levels 1–3, 2d6 at levels 4–7, 2d8 at levels 8–11, 3d6 at levels 12–15, 3d8 at levels 16–19, and 4d8 at level 20.");
             unarmed_strike.IsClassFeature = true;
             unarmed_strike.Ranks = 1;
             unarmed_strike.AddComponent<EmptyHandWeaponOverride>(c =>
@@ -725,7 +742,7 @@ namespace BrawlerClassWrath
 
             brawlers_flurry = CommonHelpers.CreateFeature("RMBrawlersFlurryUnlock",
                                                     "Brawler’s Flurry",
-                                                    "At 2nd level, a brawler can make a flurry of blows as a full attack. When making a flurry of blows, the brawler can make one additional attack at his highest base attack bonus. This additional attack stacks with the bonus attacks from haste and other similar effects. When using this ability, the brawler can make these attacks with any combination of his unarmed strikes, weapons from the close fighter weapon group, or weapons with thee monk special weapon quality. He takes no penalty for using multiple weapons when making a flurry of blows, but he does not gain any additional attacks beyond what's already granted by the flurry for doing so. (He can still gain additional attacks from a high base attack bonus, from this ability, and from haste and similar effects).\nAt 11th level, a brawler can make an additional attack at his highest base attack bonus whenever he makes a flurry of blows. This stacks with the first attack from this ability and additional attacks from haste and similar effects.",
+                                                    "At 2nd level, a brawler can make a flurry of blows as a full attack. When making a flurry of blows, the brawler can make one additional attack at his highest base attack bonus. This additional attack stacks with the bonus attacks from haste and other similar effects. When using this ability, the brawler can make these attacks with any combination of his unarmed strikes, weapons from the close fighter weapon group, or weapons with the monk special weapon quality. He takes no penalty for using multiple weapons when making a flurry of blows, but he does not gain any additional attacks beyond what's already granted by the flurry for doing so. (He can still gain additional attacks from a high base attack bonus, from this ability, and from haste and similar effects).\nAt 11th level, a brawler can make an additional attack at his highest base attack bonus whenever he makes a flurry of blows. This stacks with the first attack from this ability and additional attacks from haste and similar effects.",
                                                     null,
                                                     FeatureGroup.None,
                                                     Helpers.Create<SpecificWeaponGroupOrFeralCombatFeatureUnlock>(s =>
@@ -737,7 +754,7 @@ namespace BrawlerClassWrath
             brawlers_flurry.Ranks = flurry1_monk.Ranks;
             brawlers_flurry11 = CommonHelpers.CreateFeature("RMBrawlersFlurry11Unlock",
                                                     "Brawler’s Flurry",
-                                                    "At 2nd level, a brawler can make a flurry of blows as a full attack. When making a flurry of blows, the brawler can make one additional attack at his highest base attack bonus. This additional attack stacks with the bonus attacks from haste and other similar effects. When using this ability, the brawler can make these attacks with any combination of his unarmed strikes, weapons from the close fighter weapon group, or weapons with thee monk special weapon quality. He takes no penalty for using multiple weapons when making a flurry of blows, but he does not gain any additional attacks beyond what's already granted by the flurry for doing so. (He can still gain additional attacks from a high base attack bonus, from this ability, and from haste and similar effects).\nAt 11th level, a brawler can make an additional attack at his highest base attack bonus whenever he makes a flurry of blows. This stacks with the first attack from this ability and additional attacks from haste and similar effects.",
+                                                    "At 2nd level, a brawler can make a flurry of blows as a full attack. When making a flurry of blows, the brawler can make one additional attack at his highest base attack bonus. This additional attack stacks with the bonus attacks from haste and other similar effects. When using this ability, the brawler can make these attacks with any combination of his unarmed strikes, weapons from the close fighter weapon group, or weapons with the monk special weapon quality. He takes no penalty for using multiple weapons when making a flurry of blows, but he does not gain any additional attacks beyond what's already granted by the flurry for doing so. (He can still gain additional attacks from a high base attack bonus, from this ability, and from haste and similar effects).\nAt 11th level, a brawler can make an additional attack at his highest base attack bonus whenever he makes a flurry of blows. This stacks with the first attack from this ability and additional attacks from haste and similar effects.",
                                                     null,
                                                     FeatureGroup.None,
                                                     Helpers.Create<SpecificWeaponGroupOrFeralCombatFeatureUnlock>(s =>
@@ -781,6 +798,478 @@ namespace BrawlerClassWrath
             brawlers_flurry11.IsClassFeature = true;
         }
 
+        // ARCHETYPES
+        // WILD CHILD
+
+        static void createWildChild()
+        {
+            wild_child = Helpers.CreateBlueprint<BlueprintArchetype>("RMWildChild", a =>
+            {
+                a.LocalizedName = Helpers.CreateString($"{a.name}.Name", "Wild Child");
+                a.LocalizedDescription = Helpers.CreateString($"{a.name}.Description", "The wild child works with his sworn animal friend to conquer the challenges that lay before them. This kinship could come from being lost in the wilderness and raised by animals or growing up with an exotic pet.");
+            });
+            wild_child.m_ParentClass = BrawlerClass;
+
+            createAnimalCompanion();
+            createWildChildMounted();
+
+            wild_child.RemoveFeatures = new LevelEntry[]
+            {
+                Helpers.LevelEntry(1, combat_feat),
+                Helpers.LevelEntry(4, combat_feat),
+                Helpers.LevelEntry(6, combat_feat),
+                Helpers.LevelEntry(10, combat_feat),
+                Helpers.LevelEntry(12, combat_feat),
+                Helpers.LevelEntry(16, combat_feat),
+                Helpers.LevelEntry(18, combat_feat),
+            };
+
+            wild_child.AddFeatures = new LevelEntry[] {Helpers.LevelEntry(1, animal_companion, wildchild_mountedcombat_feats),
+                                                             Helpers.LevelEntry(2, wildchild_mountedcombat_feats),
+                                                             Helpers.LevelEntry(6, wildchild_mountedcombat_feats),
+                                                             Helpers.LevelEntry(10, wildchild_mountedcombat_feats),
+                                                             Helpers.LevelEntry(14, wildchild_mountedcombat_feats),
+                                                             Helpers.LevelEntry(18, wildchild_mountedcombat_feats)
+                                                            };
+
+            brawler_progression.m_UIDeterminatorsGroup = brawler_progression.m_UIDeterminatorsGroup.AddToArray(animal_companion.ToReference<BlueprintFeatureBaseReference>());
+            brawler_progression.UIGroups = brawler_progression.UIGroups.AddToArray(Helpers.CreateUIGroup(wildchild_mountedcombat_feats));
+            wild_child.ReplaceClassSkills = true;
+            wild_child.ClassSkills = BrawlerClass.ClassSkills.AddToArray(StatType.SkillLoreNature);
+        }
+
+
+        static void createWildChildMounted()
+        {
+            wildchild_mountedcombat_feats = Helpers.CreateBlueprint<BlueprintFeatureSelection>("RMWildChildMountedCombatFeats");
+            var soheiMountedFeats = Resources.GetBlueprint<BlueprintFeatureSelection>("59bd6f915ba1dee44a8316f97fd51967");
+
+            wildchild_mountedcombat_feats.SetName("Wild Child Bonus Feat");
+            wildchild_mountedcombat_feats.SetDescription("At 1st level, 2nd level, and every 4 levels thereafter, a Wild Child can select a bonus {g|Encyclopedia:Feat}feat{/g}. These feats must be taken from the following list: Combat Reflexes, Dodge, Crane Style, Blind Fight, Improved {g|Encyclopedia:Initiative}Initiative{/g}\nAt 6th level, the following feats are added to the list: Improved Trip, Improved Disarm\nAt 10th level, the following feats are added to the list: Improved {g|Encyclopedia:Critical}Critical{/g}, Improved Blind Fight.\nA wild child need not have any of the prerequisites normally required for these feats to select them.");
+            wildchild_mountedcombat_feats.IgnorePrerequisites = true;
+            wildchild_mountedcombat_feats.Ranks = 1;
+            wildchild_mountedcombat_feats.IsClassFeature = true;
+            wildchild_mountedcombat_feats.m_Icon = soheiMountedFeats.m_Icon;
+            wildchild_mountedcombat_feats.m_AllFeatures = soheiMountedFeats.m_AllFeatures;
+            wildchild_mountedcombat_feats.m_Features = soheiMountedFeats.m_Features;
+
+
+        }
+
+
+        static void createAnimalCompanion()
+        {
+            var animal_companion_progression = Helpers.CreateBlueprint<BlueprintProgression>( "RMWildChildAnimalCompanionProgression");
+            var huntsmasterCompanion = Resources.GetBlueprint<BlueprintProgression>("924fb4b659dcb4f4f906404ba694b690");
+
+
+            var classRefs = new BlueprintProgression.ClassWithLevel[getBrawlerArray().Count()];
+
+            for (var i = 0; i < classRefs.Length; i++)
+            {
+                classRefs[i] = Helpers.ClassToClassWithLevel(getBrawlerArray()[i]);
+            }
+
+            animal_companion_progression.m_Classes = classRefs;
+            animal_companion_progression.LevelEntries = huntsmasterCompanion.LevelEntries;
+            animal_companion_progression.Ranks = 1;
+            animal_companion_progression.IsClassFeature = true;
+
+            animal_companion = Helpers.CreateBlueprint<BlueprintFeatureSelection>("RMAnimalCompanionSelectionWildCHild");
+            animal_companion.Ranks = 1;
+            animal_companion.IsClassFeature = true;
+            var huntsCompanionFeat = Resources.GetBlueprint<BlueprintFeatureSelection>("2995b36659b9ad3408fd26f137ee2c67");
+            animal_companion.m_AllFeatures = huntsCompanionFeat.m_AllFeatures;
+            animal_companion.SetNameDescription(huntsCompanionFeat);
+            animal_companion.Components = huntsCompanionFeat.Components;
+            animal_companion.SetDescription("At 1st level, a wild child forms a bond with a loyal companion that accompanies the wild child on his adventures. A wild child can begin play with any of the animals available to a druid. The wild child uses his brawler level as his effective druid level for determining the abilities of his animal companion.");
+            var add_progression = Helpers.Create<AddFeatureOnApply>();
+            add_progression.m_Feature = animal_companion_progression.ToReference<BlueprintFeatureReference>();
+            animal_companion.ComponentsArray[0] = add_progression;
+        }
+
+        //venomous fist
+
+
+        static void createVenomfist()
+        {
+            venomfist = Helpers.CreateBlueprint<BlueprintArchetype>("VenomfistBrawler", a =>
+            {
+                a.LocalizedName = Helpers.CreateString($"{a.name}.Name", "Venomfist");
+                a.LocalizedDescription = Helpers.CreateString($"{a.name}.Description", "Thanks to alchemical experiments and rigorous study of venomous creatures, a venomfist has toxic unarmed strikes.");
+            });
+            wild_child.m_ParentClass = BrawlerClass;
+
+            createVenomousStrike();
+
+            venomfist.RemoveFeatures = new LevelEntry[]
+            {
+                Helpers.LevelEntry(1, unarmed_strike),
+                Helpers.LevelEntry(4, knockout, Resources.GetBlueprint<BlueprintFeature>("8267a0695a4df3f4ca508499e6164b98")),
+                Helpers.LevelEntry(5, close_weapon_mastery),
+                Helpers.LevelEntry(8, Resources.GetBlueprint<BlueprintFeature>("f790a36b5d6f85a45a41244f50b947ca")),
+                Helpers.LevelEntry(12, Resources.GetBlueprint<BlueprintFeature>("b3889f445dbe42948b8bb1ba02e6d949")),
+                Helpers.LevelEntry(16, Resources.GetBlueprint<BlueprintFeature>("078636a2ce835e44394bb49a930da230")),
+                Helpers.LevelEntry(20, Resources.GetBlueprint<BlueprintFeature>("df38e56fa8b3f0f469d55f9aa26b3f5c")),
+            };
+
+
+
+        venomfist.AddFeatures = new LevelEntry[] {Helpers.LevelEntry(1, venomous_strike[0]),
+                                                              Helpers.LevelEntry(4, venomous_strike[1]),
+                                                              Helpers.LevelEntry(5, venomous_strike[2]),
+                                                              Helpers.LevelEntry(10, venomous_strike[3]),
+                                                              Helpers.LevelEntry(16, venomous_strike[4]),
+                                                         };
+
+            brawler_progression.UIGroups = brawler_progression.UIGroups.AddToArray(Helpers.CreateUIGroup(venomous_strike));
+        }
+
+
+        static void createVenomousStrike()
+        {
+            var fatigued = Resources.GetBlueprint<BlueprintBuff>("e6f2fc5d73d88064583cb828801212f4");
+            var shaken = Resources.GetBlueprint<BlueprintBuff>("25ec6cb6ab1845c48a95f9c20b034220");
+            var sickened = Resources.GetBlueprint<BlueprintBuff>("4e42460798665fd4cb9173ffa7ada323");
+            var blinded = Resources.GetBlueprint<BlueprintBuff>("0ec36e7596a4928489d2049e1e1c76a7");
+            var exhausted = Resources.GetBlueprint<BlueprintBuff>("46d1b9cc3d0fd36469a471b047d773a2");
+            var staggered = Resources.GetBlueprint<BlueprintBuff>("df3950af5a783bd4d91ab73eb8fa0fd3");
+            var dazed = CommonHelpers.dazed_non_mind_affecting;
+            var stunned = Resources.GetBlueprint<BlueprintBuff>("09d39b38bb7c6014394b6daced9bacd3");
+
+            var poison_stats = new StatType[] { StatType.Unknown, StatType.Constitution, StatType.Dexterity, StatType.Strength };
+
+            List<BlueprintAbility> secondary_effect_toggle = new List<BlueprintAbility>();
+            List<BlueprintAbility> poison_damage_type_toggle = new List<BlueprintAbility>();
+
+            var secondary_effect_buff = CommonHelpers.CreateBuff("VenomfistSecondaryEffectBuff", 
+                                                           "",
+                                                           "",
+                                                           null,
+                                                           null,
+                                                           CommonHelpers.CreateSpellDescriptor(SpellDescriptor.Poison));
+            secondary_effect_buff.m_Flags = BlueprintBuff.Flags.HiddenInUi | BlueprintBuff.Flags.Harmful;
+
+
+            var immune_to_secondary_condition_buff = CommonHelpers.CreateBuff("ImmuneToSecondaryVenomfistEffect",
+                                                            "Secondary Venom Fist Effect Immunity",
+                                                            "The creature is immune to the secondary effects of the venomfist’s poison for 24 hours.",
+                                                            Helpers.GetIcon("b48b4c5ffb4eab0469feba27fc86a023"), //delay poison
+                                                            null
+                                                            );
+            immune_to_secondary_condition_buff.m_Flags = BlueprintBuff.Flags.RemoveOnRest;
+
+            var apply_secondary_effect = CommonHelpers.CreateConditional(CommonHelpers.createContextConditionHasFact(immune_to_secondary_condition_buff, has: false),
+                                                                   CommonHelpers.createContextActionApplyChildBuff(secondary_effect_buff)
+                                                                  );
+
+            var apply_immunity_to_secondary_effect = CommonHelpers.CreateConditional(CommonHelpers.createContextConditionHasFact(immune_to_secondary_condition_buff, has: false),
+                                                                               CommonHelpers.createContextActionApplyBuff(immune_to_secondary_condition_buff,
+                                                                                                                    CommonHelpers.CreateContextDuration(1, DurationRate.Days),
+                                                                                                                    dispellable: false)
+                                                                               );
+
+            DiceFormula[] diceFormulas = new DiceFormula[] {new DiceFormula(1, DiceType.D4),
+                                                            new DiceFormula(1, DiceType.D6),
+                                                            new DiceFormula(1, DiceType.D8),
+                                                            new DiceFormula(1, DiceType.D10),
+                                                            new DiceFormula(2, DiceType.D6),
+                                                            new DiceFormula(2, DiceType.D8)};
+
+            venomous_strike[0] = CommonHelpers.CreateFeature("VenomousStrike1Feature",
+                                                       "Venomous Strike",
+                                                       "A venomfist’s unarmed strikes deal damage as a creature one size category smaller (1d4 at first level for Medium venomfists). If she hits with her first unarmed strike in a round, the target must succeed at a Fortitude saving throw (DC = 10 + half the venomfist’s brawler level + her Constitution modifier) or take an additional amount of damage equal to the venomfist’s Constitution modifier. The venomfist is immune to this toxin.",
+                                                       Helpers.GetIcon("c7773d1b408fea24dbbb0f7bf3eb864e"), //physical enchantment strength
+                                                       FeatureGroup.None,
+                                                      Helpers.Create<ContextWeaponDamageDiceReplacementWeaponCategory>(c =>
+                                                      {
+                                                          c.dice_formulas = diceFormulas;
+                                                          c.value = Helpers.CreateContextValue(AbilityRankType.Default);
+                                                          c.categories = new WeaponCategory[] {WeaponCategory.UnarmedStrike};
+                                                      }),
+                                                      Helpers.CreateContextRankConfig(baseValueType: ContextRankBaseValueType.ClassLevel,
+                                                                                        type: AbilityRankType.Default,
+                                                                                        progression: ContextRankProgression.StartPlusDivStep,
+                                                                                        startLevel: 4,
+                                                                                        stepLevel: 4,
+                                                                                        classes: getBrawlerArray()),
+                                                       CommonHelpers.CreateSpellDescriptor(SpellDescriptor.Poison)
+                                                       );
+
+            venomous_strike[1] = CommonHelpers.CreateFeature("VenomousStrike4Feature",
+                                                       "Venomous Strike",
+                                                       "At 4th level, a target that fails this save must succeed at a second saving throw 1 round later or take the same amount of damage again. This effect repeats as long as the target continues to fail its saving throws, to a maximum number of rounds equal to 1 plus 1 additional round for every 4 brawler levels the venomfist has. Unlike other poisons, multiple doses of a venomfist’s poison never stack; the more recent poison effect replaces the older one.",
+                                                       Helpers.GetIcon("c7773d1b408fea24dbbb0f7bf3eb864e"), //physical enchantment strength
+                                                       FeatureGroup.None
+                                                       );
+
+            venomous_strike[2] = CommonHelpers.CreateFeature("VenomousStrike5Feature",
+                                                       "Venomous Strike",
+                                                       "At 5th level, after the venomfist gets 8 hours of rest, she can choose a secondary effect for her venom to impose. She can choose fatigued, shaken, or sickened. A creature that fails its saving throw against her venom also gains the chosen condition until it succeeds at a save against the venom or until the venom’s duration ends. Once a creature succeeds at its save against the poison, it becomes immune to the secondary condition for 24 hours, but the attack still deals the extra damage.",
+                                                       fatigued.Icon,
+                                                       FeatureGroup.None
+                                                       );
+
+            venomous_strike[3] = CommonHelpers.CreateFeature("VenomousStrike10Feature",
+                                                       "Venomous Strike",
+                                                       "At 10th level, when the venomfist chooses the condition her venom imposes, she can also cause her venom to deal ability score damage each round instead of hit point damage. She chooses Strength, Dexterity, or Constitution, and her venom deals 1d3 points of ability score damage each round. In addition, she adds blinded, exhausted, and staggered to the list of secondary effects she can choose for her venom.",
+                                                       exhausted.Icon,
+                                                       FeatureGroup.None
+                                                       );
+
+            venomous_strike[4] = CommonHelpers.CreateFeature("VenomousStrike16Feature",
+                                                       "Venomous Strike",
+                                                       "At 16th level, the venomfist’s venom is particularly potent. If it fails the initial save, the target must succeed at two consecutive saves before being cured of the venom, though if the first save is successful, the secondary effect ends and the creature is immune to the secondary effects of the venomfist’s poison for 24 hours. In addition, the venomfist adds dazed and stunned to the list of secondary effects she can choose for her venom.",
+                                                       dazed.Icon,
+                                                       FeatureGroup.None
+                                                       );
+
+            var secondary_effect_buffs = new Dictionary<BlueprintBuff, BlueprintFeature>
+            {
+                {fatigued, venomous_strike[2]},
+                {shaken, venomous_strike[2] },
+                {sickened, venomous_strike[2] },
+                {blinded, venomous_strike[3] },
+                {exhausted, venomous_strike[3] },
+                {staggered, venomous_strike[3] },
+                {dazed, venomous_strike[4] },
+                {stunned, venomous_strike[4] }
+            };
+
+            var remove_stat_buffs = Helpers.Create<ContextActionRemoveBuffs>(c => c.Buffs = new BlueprintBuff[0]);
+            var stat_buff_resource = CommonHelpers.CreateAbilityResource("VenomousStrikeStatBuffResource", "", "", "", null);
+            stat_buff_resource.SetFixedResource(1);
+
+            venomous_strike[0].AddComponents(CommonHelpers.createContextCalculateAbilityParamsBasedOnClass(BrawlerClass, StatType.Constitution),
+                                             Helpers.Create<RecalculateOnStatChange>(r => r.Stat = StatType.Constitution),
+                                             Helpers.CreateContextRankConfig(ContextRankBaseValueType.ClassLevel,
+                                                                             classes: getBrawlerArray(),
+                                                                             progression: ContextRankProgression.OnePlusDivStep,
+                                                                             stepLevel: 4,
+                                                                             type: AbilityRankType.DamageDice
+                                                                             )
+                                             );
+            foreach (var s in poison_stats)
+            {
+                string stat_text = s == StatType.Unknown ? "HP" : s.ToString();
+                var buff = CommonHelpers.CreateBuff(stat_text + "VenomousStrikeEffectBuff",
+                                              "Venomous Strike Effect: " + stat_text + " Damage",
+                                              venomous_strike[0].Description,
+                                              venomous_strike[0].Icon,
+                                              null,
+                                              Helpers.Create<BuffPoisonDamage>(p =>
+                                              {
+                                                  if (s == StatType.Unknown)
+                                                  {
+                                                      p.ContextValue = Helpers.CreateContextDiceValue(DiceType.Zero, 0, Helpers.CreateContextValue(AbilityRankType.DamageBonus));
+                                                  }
+                                                  else
+                                                  {
+                                                      p.ContextValue = Helpers.CreateContextDiceValue(DiceType.D3, 1, 0);
+                                                  }
+                                                  p.Stat = s;
+                                                  p.SaveType = SavingThrowType.Fortitude;
+                                                  p.contextSuccesfullSaves = Helpers.CreateContextValue(AbilityRankType.StatBonus);
+                                                  p.contextTicks = Helpers.CreateContextValue(AbilityRankType.DamageDice);
+                                                  p.on_successful_save_action = Helpers.CreateActionList(CommonHelpers.createContextActionRemoveBuffFromCaster(secondary_effect_buff),
+                                                                                                         apply_immunity_to_secondary_effect);
+                                              }),
+                                              Helpers.CreateContextRankConfig(ContextRankBaseValueType.FeatureList, type: AbilityRankType.StatBonus,
+                                                                              progression: ContextRankProgression.BonusValue, stepLevel: 1, featureList: new BlueprintFeature[] { venomous_strike[4] }),
+                                              Helpers.CreateContextRankConfig(ContextRankBaseValueType.StatBonus, type: AbilityRankType.DamageBonus,
+                                                                              stat: StatType.Constitution, min: 0),
+                                              Helpers.CreateContextRankConfig(ContextRankBaseValueType.ClassLevel, classes: getBrawlerArray(), type: AbilityRankType.DamageDice,
+                                                                              progression: ContextRankProgression.OnePlusDivStep, stepLevel: 4),
+                                              CommonHelpers.CreateAddFactContextActions(activated: new GameAction[]{ apply_secondary_effect }),
+                                              CommonHelpers.CreateSpellDescriptor(SpellDescriptor.Poison)
+                                              );
+                buff.Stacking = StackingType.Replace;
+
+                var apply_buff = CommonHelpers.createContextActionApplyBuff(buff, CommonHelpers.CreateContextDuration(Helpers.CreateContextValue(AbilityRankType.DamageDice)), dispellable: false);
+                var apply_buff_saved = CommonHelpers.CreateActionSavingThrow(SavingThrowType.Fortitude, CommonHelpers.CreateConditionalSaved(apply_immunity_to_secondary_effect, apply_buff));
+                var owner_buff = CommonHelpers.CreateBuff(stat_text + "VenomousStrikeBuff",
+                                                    buff.Name,
+                                                    venomous_strike[0].Description,
+                                                    venomous_strike[0].Icon,
+                                                    null
+                                                    );
+
+
+
+
+                if (s != StatType.Unknown)
+                {
+                    var check_apply_buff_saved = CommonHelpers.CreateConditional(CommonHelpers.createContextConditionCasterHasFact(owner_buff), apply_buff_saved);
+                    venomous_strike[0].AddComponent(CommonHelpers.createAddInitiatorAttackWithWeaponTriggerWithCategory(Helpers.CreateActionList(check_apply_buff_saved),
+                                                                                                 only_first_hit: true));
+                }
+                else
+                {
+                    var check_apply_buff_saved = CommonHelpers.CreateConditional(CommonHelpers.CreateConditionsCheckerOr(CommonHelpers.createContextConditionCasterHasFact(owner_buff),
+                                                                                                             CommonHelpers.createContextConditionCasterHasFact(venomous_strike[3], has: false)
+                                                                                                             ),
+                                                                           apply_buff_saved);
+                    venomous_strike[0].AddComponent(CommonHelpers.createAddInitiatorAttackWithWeaponTriggerWithCategory(Helpers.CreateActionList(check_apply_buff_saved),
+                                                                                                 only_first_hit: true));
+                }
+                owner_buff.m_Flags = BlueprintBuff.Flags.StayOnDeath;
+                remove_stat_buffs.Buffs = remove_stat_buffs.Buffs.AddToArray(owner_buff);
+
+                var owner_ability = CommonHelpers.CreateAbility(stat_text + "VenomousStrikeAbility",
+                                                          owner_buff.Name,
+                                                          owner_buff.Description,
+                                                          "",
+                                                          owner_buff.Icon,
+                                                          AbilityType.Extraordinary,
+                                                          CommandType.Standard,
+                                                          AbilityRange.Personal,
+                                                          "",
+                                                          "",
+                                                          CommonHelpers.CreateRunActions(remove_stat_buffs,
+                                                                                   CommonHelpers.createContextActionApplyBuff(owner_buff, CommonHelpers.CreateContextDuration(), dispellable: false, is_permanent: true)),
+                                                          stat_buff_resource.CreateResourceLogic()
+                                                          );
+                owner_ability.m_IsFullRoundAction = true;
+                owner_ability.setMiscAbilityParametersSelfOnly();
+                poison_damage_type_toggle.Add(owner_ability);
+            }
+
+            var remove_secondary_effect_buffs = Helpers.Create<ContextActionRemoveBuffs>(c => c.Buffs = new BlueprintBuff[0]);
+            var secondary_effect_resource = CommonHelpers.CreateAbilityResource("VenomousStrikeSecondaryEffectResource", "", "", "", null);
+            secondary_effect_resource.SetFixedResource(1);
+
+            foreach (var b in secondary_effect_buffs)
+            {
+                var owner_buff = CommonHelpers.CreateBuff("VenomousStrike" + b.Key.name,
+                                                    "Venomous Strike: " + b.Key.Name,
+                                                    venomous_strike[2].Description,
+                                                    b.Key.Icon,
+                                                    null
+                                                    );
+                owner_buff.m_Flags = BlueprintBuff.Flags.StayOnDeath;
+                remove_secondary_effect_buffs.Buffs = remove_secondary_effect_buffs.Buffs.AddToArray(owner_buff);
+
+                var owner_ability = CommonHelpers.CreateAbility(b.Key.name + "VenomousStrikeAbility",
+                                                          owner_buff.Name,
+                                                          owner_buff.Description,
+                                                          "",
+                                                          owner_buff.Icon,
+                                                          AbilityType.Extraordinary,
+                                                          CommandType.Standard,
+                                                          AbilityRange.Personal,
+                                                          "",
+                                                          "",
+                                                          CommonHelpers.CreateRunActions(remove_secondary_effect_buffs,
+                                                                                   CommonHelpers.createContextActionApplyBuff(owner_buff, CommonHelpers.CreateContextDuration(), dispellable: false, is_permanent: true)),
+                                                          secondary_effect_resource.CreateResourceLogic(),
+                                                          CommonHelpers.createContextCalculateAbilityParamsBasedOnClass(BrawlerClass, StatType.Constitution),
+                                                          CommonHelpers.createAbilityShowIfCasterHasFact(b.Value)
+                                                          );
+                owner_ability.m_IsFullRoundAction = true;
+                owner_ability.setMiscAbilityParametersSelfOnly();
+                secondary_effect_toggle.Add(owner_ability);
+
+                CommonHelpers.addContextActionApplyBuffOnConditionToActivatedAbilityBuffNoRemove(secondary_effect_buff,
+                                                                                          CommonHelpers.CreateConditional(CommonHelpers.createContextConditionCasterHasFact(owner_buff),
+                                                                                                                    CommonHelpers.createContextActionApplyChildBuff(b.Key)
+                                                                                                                   )
+                                                                                         );
+            }
+
+            var secondary_effects_wrapper = CommonHelpers.createVariantWrapper("VenomousStrikeSecondaryEffectBaseAbility", "", secondary_effect_toggle.ToArray());
+            secondary_effects_wrapper.SetNameDescriptionIcon("Venomous Strike Secondary Effect",
+                                                             venomous_strike[2].Description,
+                                                             Helpers.GetIcon("d797007a142a6c0409a74b064065a15e") //poison
+                                                             );
+
+            venomous_strike[2].AddComponents(CommonHelpers.CreateAddFact(secondary_effects_wrapper),
+                                            secondary_effect_resource.CreateAddAbilityResource()
+                                            );
+
+            var stat_damage_wrapper = CommonHelpers.createVariantWrapper("VenomousStrikeStatDamageBase", "", poison_damage_type_toggle.ToArray());
+            stat_damage_wrapper.SetNameDescriptionIcon("Venomous Strike: Stat Damage",
+                                                       "At 10th level, when the venomfist chooses the condition her venom imposes, she can also cause her venom to deal ability score damage each round instead of hit point damage. She chooses Strength, Dexterity, or Constitution, and her venom deals 1d3 points of ability score damage each round.",
+                                                       Helpers.GetIcon("fd101fbc4aacf5d48b76a65e3aa5db6d")
+                                                       );
+
+            venomous_strike[3].AddComponents(CommonHelpers.CreateAddFact(stat_damage_wrapper),
+                                            stat_buff_resource.CreateAddAbilityResource());
+        }
+
+        // snakebite striker
+        static void createSnakebiteStriker()
+        {
+            snakebite_striker = Helpers.CreateBlueprint<BlueprintArchetype>("SnakebiteStriker", a =>
+            {
+                a.LocalizedName = Helpers.CreateString($"{a.name}.Name", "Snakebite Striker");
+                a.LocalizedDescription = Helpers.CreateString($"{a.name}.Description", "With her lightning quickness and guile, a snakebite striker keeps her foes’ attention focused on her, because any one of her feints might be an actual attack. By giving up some of a brawler’s versatility, she increases her damage potential and exposes opponents to deadly and unexpected strikes.");
+            });
+            snakebite_striker.m_ParentClass = BrawlerClass;
+ 
+
+            createOpportunist();
+
+            var sneak_attack = Resources.GetBlueprint<BlueprintFeature>("9b9eac6709e1c084cb18c3a366e0ec87");
+            snakebite_striker.RemoveFeatures = new LevelEntry[]
+            {
+                Helpers.LevelEntry(2, combat_feat),
+                Helpers.LevelEntry(3, maneuver_training[0]),
+                Helpers.LevelEntry(6, combat_feat),
+                Helpers.LevelEntry(7, maneuver_training[1]),
+                Helpers.LevelEntry(10, combat_feat),
+                Helpers.LevelEntry(11, maneuver_training[2]),
+                Helpers.LevelEntry(14, combat_feat),
+                Helpers.LevelEntry(15, maneuver_training[3]),
+                Helpers.LevelEntry(18, combat_feat),
+                Helpers.LevelEntry(19, maneuver_training[4]),
+            };
+
+            snakebite_striker.AddFeatures = new LevelEntry[] {Helpers.LevelEntry(2, sneak_attack),
+                                                              Helpers.LevelEntry(3, Resources.GetBlueprint<BlueprintFeature>("14a1fc1356df9f146900e1e42142fc9d")),
+                                                              Helpers.LevelEntry(6, sneak_attack),
+                                                              Helpers.LevelEntry(7, Resources.GetBlueprint<BlueprintFeature>("52913092cd018da47845f36e6fbe240f")),
+                                                              Helpers.LevelEntry(10, sneak_attack),
+                                                              Helpers.LevelEntry(11, opportunist, Resources.GetBlueprint<BlueprintFeature>("e2d1fa11f6b095e4fb2fd1dcf5e36eb3")),
+                                                              Helpers.LevelEntry(14, sneak_attack),
+                                                              Helpers.LevelEntry(15, Resources.GetBlueprint<BlueprintFeature>("6ce0dd0cd1ef43eda9e62cdf483e05c3")),
+                                                              Helpers.LevelEntry(18, sneak_attack),
+                                                             };
+
+            BlueprintFeature[] VitalandRowdy =
+            {
+                Resources.GetBlueprint<BlueprintFeature>("14a1fc1356df9f146900e1e42142fc9d"),
+                Resources.GetBlueprint<BlueprintFeature>("52913092cd018da47845f36e6fbe240f"),
+                opportunist,
+                Resources.GetBlueprint<BlueprintFeature>("e2d1fa11f6b095e4fb2fd1dcf5e36eb3"),
+                Resources.GetBlueprint<BlueprintFeature>("6ce0dd0cd1ef43eda9e62cdf483e05c3")
+            };
+            brawler_progression.UIGroups = brawler_progression.UIGroups.AddToArray(Helpers.CreateUIGroup(sneak_attack));
+            brawler_progression.UIGroups = brawler_progression.UIGroups.AddToArray(Helpers.CreateUIGroup(VitalandRowdy));
+
+            snakebite_striker.ReplaceClassSkills = true;
+            snakebite_striker.ClassSkills = BrawlerClass.ClassSkills.AddToArray(StatType.SkillStealth);
+        }
+
+
+
+        static void createOpportunist()
+        {
+            opportunist = CommonHelpers.CreateFeature("SnakebiteStrikerOpportunist",
+                "Snakebite Opportunist",
+                "",
+                Resources.GetBlueprint<BlueprintFeature>("5bb6dc5ce00550441880a6ff8ad4c968").Icon, 
+                FeatureGroup.None);
+            opportunist.SetDescription(" At 11th level, once per round the snakebite striker can make an attack of opportunity against an opponent who has just been struck for damage in melee by another character. This attack counts as an attack of opportunity for that round. She cannot use this ability more than once per round, even if she has the Combat Reflexes feat or a similar ability. At 19th level, she can use this ability twice per round.");
+
+            opportunist.ComponentsArray = new BlueprintComponent[]
+            {
+                Helpers.Create<OpportunistMultipleAttacks>(o => o.num_extra_attacks = Helpers.CreateContextValue(AbilityRankType.Default)),
+                Helpers.CreateContextRankConfig(ContextRankBaseValueType.ClassLevel, classes: getBrawlerArray(),
+                                                progression: ContextRankProgression.DelayedStartPlusDivStep,
+                                                startLevel: 19,
+                                                stepLevel: 100)
+            };
+        }
 
 
         public class UnitPartBrawler : UnitPart

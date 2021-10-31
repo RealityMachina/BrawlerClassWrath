@@ -39,7 +39,7 @@
   </PropertyGroup>
   <PropertyGroup>
     <WrathInstallDir Condition=" '$(WrathInstallDir)' == '' ">F:\SteamLibrary\steamapps\common\Pathfinder Second Adventure</WrathInstallDir>
-  </PropertyGroup>  
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="0Harmony">
       <HintPath>$(WrathPath)\Wrath_Data\Managed\0Harmony.dll</HintPath>
@@ -126,12 +126,14 @@
     <Compile Include="Config\SettingGroup.cs" />
     <Compile Include="Extensions\ExtentionMethods.cs" />
     <Compile Include="Main.cs" />
+    <Compile Include="MythicBrawler.cs" />
     <Compile Include="NewMechanics\AddBrawlerFlurryExtraAttacks.cs" />
     <Compile Include="NewMechanics\AddBrawlerPartUnitFact.cs" />
     <Compile Include="NewMechanics\AdditionalMechanics.cs" />
     <Compile Include="NewMechanics\AddBrawlerFlurryOnActivation.cs" />
     <Compile Include="NewMechanics\CombatManeuverMechanics.cs" />
     <Compile Include="NewMechanics\FeralCombatTraining.cs" />
+    <Compile Include="NewMechanics\PoisonMechanics.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Resources.cs" />
     <Compile Include="Settings.cs" />
@@ -165,5 +167,5 @@
     </ItemGroup>
     <Publicise InputAssemblies="@(PubliciseAssemblyCSharp)" OutputPath="$(SolutionDir)lib/" PubliciseCompilerGenerated="true" />
     <Publicise InputAssemblies="@(PubliciseUniRx)" OutputPath="$(SolutionDir)lib/" PubliciseCompilerGenerated="true" />
-  </Target> 
+  </Target>
 </Project>

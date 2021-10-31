@@ -4,6 +4,7 @@ using Kingmaker.Blueprints;
 using Kingmaker.Blueprints.Classes;
 using Kingmaker.Blueprints.Classes.Prerequisites;
 using Kingmaker.Blueprints.Classes.Selection;
+using Kingmaker.Blueprints.Classes.Spells;
 using Kingmaker.Blueprints.Facts;
 using Kingmaker.Designers.EventConditionActionSystem.Actions;
 using Kingmaker.Designers.Mechanics.Facts;
@@ -52,6 +53,89 @@ namespace BrawlerClassWrath.Utilities
         public static BlueprintFeature incorporeal = Resources.GetBlueprint<BlueprintFeature>("c4a7f98d743bc784c9d4cf2105852c39");
 
 
+        static public ContextActionRemoveBuffFromCaster createContextActionRemoveBuffFromCaster(BlueprintBuff buff, int delay = 0)
+        {
+            var c = Helpers.Create<ContextActionRemoveBuffFromCaster>();
+            c.Buff = buff;
+            c.remove_delay_seconds = delay;
+            return c;
+        }
+        static public ContextConditionCasterHasFact createContextConditionCasterHasFact(BlueprintUnitFact fact, bool has = true)
+        {
+            var c = Helpers.Create<ContextConditionCasterHasFact>();
+            c.m_Fact = fact.ToReference<BlueprintUnitFactReference>();
+            c.Not = !has;
+            return c;
+        }
+        static public AddInitiatorAttackWithWeaponTrigger createAddInitiatorAttackWithWeaponTriggerWithCategory(ActionList action, bool only_hit = true, bool critical_hit = false,
+                                                                                              bool check_weapon_range_type = false, bool reduce_hp_to_zero = false,
+                                                                                              bool on_initiator = false,
+                                                                                              WeaponRangeType range_type = WeaponRangeType.Melee,
+                                                                                              bool wait_for_attack_to_resolve = false, bool only_first_hit = false,
+                                                                                              WeaponCategory weapon_category = WeaponCategory.UnarmedStrike)
+        {
+            var t = Helpers.Create<AddInitiatorAttackWithWeaponTrigger>();
+            t.Action = action;
+            t.OnlyHit = only_hit;
+            t.CriticalHit = critical_hit;
+            t.CheckWeaponRangeType = check_weapon_range_type;
+            t.RangeType = range_type;
+            t.ReduceHPToZero = reduce_hp_to_zero;
+            t.ActionsOnInitiator = on_initiator;
+            t.WaitForAttackResolve = wait_for_attack_to_resolve;
+            t.OnlyOnFirstAttack = only_first_hit;
+            t.CheckWeaponCategory = true;
+            t.Category = weapon_category;
+            return t;
+        }
+
+        public static AddFactContextActions CreateAddFactContextActions(GameAction[] activated = null, GameAction[] deactivated = null, GameAction[] newRound = null)
+        {
+            var a = Helpers.Create<AddFactContextActions>();
+            a.Activated = CreateActionList(activated);
+            a.Deactivated = CreateActionList(deactivated);
+            a.NewRound = CreateActionList(newRound);
+            return a;
+        }
+
+        static public ContextActionApplyBuff createContextActionApplyChildBuff(BlueprintBuff buff)
+        {
+            return createContextActionApplyBuff(buff, CreateContextDuration(), is_child: true, is_permanent: true, dispellable: false);
+        }
+
+
+        public static PrefabLink createPrefabLink(string asset_id)
+        {
+            var link = new PrefabLink();
+            link.AssetId = asset_id;
+            return link;
+        }
+        public static AddCondition createAddCondition(UnitCondition condition)
+        {
+            var a = Helpers.Create<AddCondition>();
+            a.Condition = condition;
+            return a;
+        }
+        public static SpellDescriptorComponent CreateSpellDescriptor(this SpellDescriptor descriptor)
+        {
+            var s = Helpers.Create<SpellDescriptorComponent>();
+            s.Descriptor = descriptor;
+            return s;
+        }
+        public static SpellDescriptorComponent CreateSpellDescriptor()
+        {
+            var s = Helpers.Create<SpellDescriptorComponent>();
+            s.Descriptor = SpellDescriptor.None;
+            return s;
+        }
+        public static BlueprintBuff dazed_non_mind_affecting = Helpers.CreateBuff("DazedNonMindAffectingBuff", bp => {
+            bp.SetName("Dazed");
+            bp.SetDescription("The creature is unable to act normally. A dazed creature can take no actions, but has no penalty to AC.\nA dazed condition typically lasts 1 round.");
+            bp.m_Icon = Helpers.GetIcon("9934fedff1b14994ea90205d189c8759");
+            bp.FxOnStart = createPrefabLink("396af91a93f6e2b468f5fa1a944fae8a");
+            bp.AddComponent(createAddCondition(UnitCondition.Dazed));
+            bp.AddComponent(CreateSpellDescriptor(SpellDescriptor.Daze));
+           });
         static public PrerequisiteAlignment createPrerequisiteAlignment(Kingmaker.UnitLogic.Alignments.AlignmentMaskType alignment)
         {
             var p = Helpers.Create<PrerequisiteAlignment>();
@@ -101,7 +185,90 @@ namespace BrawlerClassWrath.Utilities
             return a;
         }
 
+        public static void setMiscAbilityParametersSelfOnly(this BlueprintAbility ability,
+                                                               Kingmaker.Visual.Animation.Kingmaker.Actions.UnitAnimationActionCastSpell.CastAnimationStyle animation = Kingmaker.Visual.Animation.Kingmaker.Actions.UnitAnimationActionCastSpell.CastAnimationStyle.Self,
+                                                               Kingmaker.View.Animation.CastAnimationStyle animation_style = Kingmaker.View.Animation.CastAnimationStyle.CastActionSelf)
+        {
+            ability.CanTargetFriends = false;
+            ability.CanTargetEnemies = false;
+            ability.CanTargetSelf = true;
+            ability.CanTargetPoint = false;
+            ability.EffectOnEnemy = AbilityEffectOnUnit.None;
+            ability.EffectOnAlly = AbilityEffectOnUnit.Helpful;
+            ability.Animation = animation;
+            ability.AnimationStyle = animation_style;
+        }
+        public static AbilityVariants CreateAbilityVariants(this BlueprintAbility parent, IEnumerable<BlueprintAbility> variants) => CreateAbilityVariants(parent, variants.ToArray());
 
+        public static AbilityVariants CreateAbilityVariants(this BlueprintAbility parent, params BlueprintAbility[] variants)
+        {
+            var a = Helpers.Create<AbilityVariants>();
+
+            BlueprintAbilityReference[] newVar = new BlueprintAbilityReference[variants.Count()];
+            var i = 0;
+            foreach(var variant in variants)
+            {
+                newVar[i] = variant.ToReference<BlueprintAbilityReference>();
+                i++;
+            }
+            a.m_Variants = newVar;
+            foreach (var v in variants)
+            {
+                v.Parent = parent;
+            }
+            return a;
+        }
+
+        public static AddFacts CreateAddFact(this BlueprintUnitFact fact)
+        {
+            var result = Helpers.Create<AddFacts>();
+            result.name = $"AddFacts${fact.name}";
+            result.m_Facts = new BlueprintUnitFactReference[] { fact.ToReference<BlueprintUnitFactReference>() };
+            return result;
+        }
+        public static AddFacts CreateAddFacts(params BlueprintUnitFact[] facts)
+        {
+            BlueprintUnitFactReference[] newVar = new BlueprintUnitFactReference[facts.Count()];
+            var i = 0;
+            foreach (var fact in facts)
+            {
+                newVar[i] = fact.ToReference<BlueprintUnitFactReference>();
+                i++;
+            }
+            var result = Helpers.Create<AddFacts>();
+            result.m_Facts = newVar;
+            return result;
+        }
+
+        public static BlueprintAbility createVariantWrapper(string name, string guid, params BlueprintAbility[] variants)
+        {
+           // var wrapper = library.CopyAndAdd<BlueprintAbility>(variants[0].AssetGuid, name, guid);
+            var wrapper = CreateAbility(name, variants[0].m_DisplayName, variants[0].m_Description, guid, variants[0].m_Icon, variants[0].Type, variants[0].ActionType, variants[0].Range,
+                variants[0].LocalizedDuration, variants[0].LocalizedSavingThrow);
+
+            //wrapper.SetDescription("");
+            List<BlueprintComponent> components = new List<BlueprintComponent>();
+            components.Add(CreateAbilityVariants(wrapper, variants));
+            wrapper.ComponentsArray = components.ToArray();
+
+            return wrapper;
+        }
+        static public void addContextActionApplyBuffOnConditionToActivatedAbilityBuffNoRemove(BlueprintBuff target_buff, Conditional conditional_action)
+        {
+            if (target_buff.GetComponent<AddFactContextActions>() == null)
+            {
+                target_buff.AddComponent(Helpers.CreateEmptyAddFactContextActions());
+            }
+
+            var activated = target_buff.GetComponent<AddFactContextActions>().Activated;
+            activated.Actions = activated.Actions.AppendToArray(conditional_action);
+        }
+        static public AbilityShowIfCasterHasFact createAbilityShowIfCasterHasFact(BlueprintUnitFact fact)
+        {
+            var a = Helpers.Create<AbilityShowIfCasterHasFact>();
+            a.m_UnitFact = fact.ToReference<BlueprintUnitFactReference>();
+            return a;
+        }
         public static BlueprintAbility CreateAbility(String name, String displayName,
             String description, String guid, UnityEngine.Sprite icon,
             AbilityType type, CommandType actionType, AbilityRange range,
@@ -358,9 +525,31 @@ namespace BrawlerClassWrath.Utilities
             c.Condition = condition;
             return c;
         }
-        internal static readonly FastRef<BlueprintAbilityResource, BlueprintAbilityResource.Amount> setMaxAmount = Helpers.CreateFieldSetter<BlueprintAbilityResource, BlueprintAbilityResource.Amount>("m_MaxAmount");
-        internal static readonly FastRef<BlueprintAbilityResource, BlueprintAbilityResource.Amount> getMaxAmount = Helpers.CreateFieldGetter<BlueprintAbilityResource, BlueprintAbilityResource.Amount>("m_MaxAmount");
+        public static void SetFixedResource(this BlueprintAbilityResource resource, int baseValue)
+        {
+            BlueprintAbilityResource.Amount amount;
+            if (resource.m_MaxAmount.BaseValue <= 0)
+                amount = new BlueprintAbilityResource.Amount();
+            else
+                amount = resource.m_MaxAmount;
 
+
+            amount.BaseValue = baseValue;
+
+            // Enusre arrays are at least initialized to empty.
+            var emptyClasses = Array.Empty<BlueprintCharacterClassReference>();
+            var emptyArchetypes = Array.Empty<BlueprintArchetypeReference>();
+            var field = "m_Class";
+            if (Helpers.GetField(amount, field) == null) amount.m_Class = Array.Empty<BlueprintCharacterClassReference>();
+            field = "m_ClassDiv";
+            if (Helpers.GetField(amount, field) == null) amount.m_ClassDiv = emptyClasses;
+            field = "m_Archetypes";
+            if (Helpers.GetField(amount, field) == null) amount.m_Archetypes = emptyArchetypes;
+            field = "m_ArchetypesDiv";
+            if (Helpers.GetField(amount, field) == null) amount.m_ArchetypesDiv = emptyArchetypes;
+
+            resource.m_MaxAmount = amount;
+        }
         public static void SetIncreasedByLevelStartPlusDivStep(this BlueprintAbilityResource resource, int baseValue,
             int startingLevel, int startingIncrease, int levelStep, int perStepIncrease, int minClassLevelIncrease, float otherClassesModifier,
             BlueprintCharacterClass[] classes, BlueprintArchetype[] archetypes = null)

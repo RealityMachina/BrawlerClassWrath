@@ -329,6 +329,12 @@ namespace BrawlerClassWrath.Extensions {
             }
             return clone;
         }
+        public static void SetNameDescriptionIcon(this BlueprintUnitFact feature, String displayName, String description, Sprite Icon)
+        {
+            feature.SetName(Helpers.CreateString(feature.name + ".Name", displayName));
+            feature.SetDescription(description);
+            feature.m_Icon = Icon;
+        }
 
         public static void SetNameDescription(this BlueprintUnitFact feature, String displayName, String description) {
             feature.SetName(Helpers.CreateString(feature.name + ".Name", displayName));

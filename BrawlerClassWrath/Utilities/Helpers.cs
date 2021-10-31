@@ -135,6 +135,17 @@ namespace BrawlerClassWrath.Utilities {
             return result;
         }
 
+
+        public static ContextDiceValue CreateContextDiceValue(this Kingmaker.RuleSystem.DiceType dice, ContextValue diceCount = null, ContextValue bonus = null)
+        {
+            return new ContextDiceValue()
+            {
+                DiceType = dice,
+                DiceCountValue = diceCount ?? CreateContextValueRank(),
+                BonusValue = bonus ?? 0
+            };
+        }
+
         public static BlueprintBuff CreateBuff(string name, Action<BlueprintBuff> init = null) {
             var result = Helpers.CreateBlueprint<BlueprintBuff>(name, bp => {
                 bp.FxOnStart = new PrefabLink();
@@ -180,6 +191,15 @@ namespace BrawlerClassWrath.Utilities {
             if (actions == null || actions.Length == 1 && actions[0] == null) actions = Array.Empty<GameAction>();
             return new ActionList() { Actions = actions };
         }
+        public static AddFactContextActions CreateEmptyAddFactContextActions()
+        {
+            var a = Create<AddFactContextActions>();
+            a.Activated = CreateActionList();
+            a.Deactivated = CreateActionList();
+            a.NewRound = CreateActionList();
+            return a;
+        }
+
 #if false
         public static ContextActionSavingThrow CreateActionSavingThrow(this SavingThrowType savingThrow, params GameAction[] actions) {
             var c = Create<ContextActionSavingThrow>();

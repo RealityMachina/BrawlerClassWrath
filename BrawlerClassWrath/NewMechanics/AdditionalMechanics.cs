@@ -9,6 +9,7 @@ using Kingmaker.Blueprints.JsonSystem;
 using Kingmaker.Blueprints.Root;
 using Kingmaker.Blueprints.Validation;
 using Kingmaker.Designers.Mechanics.Buffs;
+using Kingmaker.Designers.Mechanics.Facts;
 using Kingmaker.EntitySystem.Entities;
 using Kingmaker.EntitySystem.Stats;
 using Kingmaker.Enums;
@@ -18,15 +19,21 @@ using Kingmaker.PubSubSystem;
 using Kingmaker.RuleSystem;
 using Kingmaker.RuleSystem.Rules;
 using Kingmaker.RuleSystem.Rules.Abilities;
+using Kingmaker.RuleSystem.Rules.Damage;
 using Kingmaker.UnitLogic;
 using Kingmaker.UnitLogic.Abilities;
 using Kingmaker.UnitLogic.Abilities.Blueprints;
 using Kingmaker.UnitLogic.Abilities.Components.Base;
+using Kingmaker.UnitLogic.Buffs;
+using Kingmaker.UnitLogic.Buffs.Blueprints;
 using Kingmaker.UnitLogic.Class.Kineticist;
 using Kingmaker.UnitLogic.Mechanics;
+using Kingmaker.UnitLogic.Mechanics.Actions;
 using Kingmaker.UnitLogic.Mechanics.Components;
 using Kingmaker.UnitLogic.Mechanics.Conditions;
 using Kingmaker.UnitLogic.Mechanics.Properties;
+using Kingmaker.Utility;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -37,6 +44,120 @@ using UnityEngine.Serialization;
 
 namespace BrawlerClassWrath.NewMechanics
 {
+
+    [AllowedOn(typeof(BlueprintUnitFact))]
+    [AllowMultipleComponents]
+    [TypeId("0d2ae35019c84d03a26f6e04e84d5dd4")]
+    public class OpportunistMultipleAttacks : UnitFactComponentDelegate<OpportunistData>, IGlobalRulebookHandler<RuleDealDamage>, IRulebookHandler<RuleDealDamage>, ISubscriber, IGlobalRulebookSubscriber
+    {
+        [JsonProperty]
+        private int extra_attacks_used = 0;
+
+        public ContextValue num_extra_attacks;
+
+        public void OnEventAboutToTrigger(RuleDealDamage evt)
+        {
+
+        }
+
+        public void OnEventDidTrigger(RuleDealDamage evt)
+        {
+            ItemEntityWeapon weapon = evt.DamageBundle.Weapon;
+            if (evt.Initiator == this.Owner || weapon == null || (!weapon.Blueprint.IsMelee || !this.Owner.CombatState.EngagedUnits.Contains(evt.Target)))
+                return;
+            int max_extra_attacks = num_extra_attacks.Calculate(this.Fact.MaybeContext);
+            if (Data.LastUseTime + 1.Rounds().Seconds > Kingmaker.Game.Instance.TimeController.GameTime)
+            {
+                if (extra_attacks_used < max_extra_attacks)
+                {
+                    extra_attacks_used++;
+                }
+                else
+                {
+                    return;
+                }
+            }
+            else
+            {
+                Data.LastUseTime = Kingmaker.Game.Instance.TimeController.GameTime;
+                extra_attacks_used = 0;
+            }
+
+            Kingmaker.Game.Instance.CombatEngagementController.ForceAttackOfOpportunity(this.Owner, evt.Target);
+        }
+    }
+
+
+    [TypeId("913ff1e0bfe64103bfd8804550f77498")]
+    public class ContextActionRemoveBuffFromCaster : ContextAction
+    {
+        public BlueprintBuff Buff;
+        public int remove_delay_seconds = 0;
+
+        public override string GetCaption()
+        {
+            return "Remove Buff From Caster: " + this.Buff.Name;
+        }
+
+        public override void RunAction()
+        {
+            MechanicsContext context = Context;
+            if (context == null)
+                return;
+            UnitEntityData maybeCaster = this.Context.MaybeCaster;
+            foreach (var b in this.Target.Unit.Buffs)
+            {
+                if (b.Blueprint == Buff && b.Context.MaybeCaster == maybeCaster)
+                {
+                    if (remove_delay_seconds > 0)
+                        b.RemoveAfterDelay(new TimeSpan(0, 0, remove_delay_seconds));
+                    else
+                        b.Remove();
+                }
+            }
+        }
+    }
+
+
+    [TypeId("f35d232b7a6840ed8052b3e7d0dfc389")]
+    public class ContextActionRemoveBuffs : ContextAction
+    {
+        [SerializeField]
+        [FormerlySerializedAs("TargetBuffs")]
+        public BlueprintBuff[] Buffs;
+
+        public bool ToCaster;
+
+        public override string GetCaption()
+        {
+            return "Remove Buffs";
+        }
+
+        public override void RunAction()
+        {
+
+                foreach (var b in Buffs)
+                {
+                      Buff buff = null;
+                    if (!ToCaster)
+                    {
+                        buff = base.Target.Unit.Buffs.GetBuff(b);
+                    }
+                    else
+                    {
+                         buff = Context.MaybeCaster?.Buffs.GetBuff(b);
+                     }
+                    if(buff != null)
+                    {
+                        buff.Remove();
+                    }
+                    
+                }
+            
+        }
+    }
+
+
     [AllowedOn(typeof(BlueprintUnitFact), false)]
     [AllowMultipleComponents]
     [TypeId("0447ada95b824716a633b5027cf3b7b1")]
