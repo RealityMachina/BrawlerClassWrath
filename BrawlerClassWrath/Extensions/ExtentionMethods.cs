@@ -451,6 +451,7 @@ namespace BrawlerClassWrath.Extensions {
             for (int i = 0; i < compnents_to_remove.Length; i++) {
                 if (compnents_to_remove[i] == oldComponent) {
                     blueprint.RemoveComponent(oldComponent);
+                    found = true;
                 }
             }
             if (found) {

@@ -1,4 +1,5 @@
-﻿using BrawlerClassWrath.Utilities;
+﻿using BrawlerClassWrath.Extensions;
+using BrawlerClassWrath.Utilities;
 using Kingmaker.Blueprints;
 using Kingmaker.Blueprints.Classes;
 using Kingmaker.Blueprints.Classes.Selection;
@@ -10,6 +11,7 @@ using Kingmaker.Blueprints.Root;
 using Kingmaker.Blueprints.Validation;
 using Kingmaker.Designers.Mechanics.Buffs;
 using Kingmaker.Designers.Mechanics.Facts;
+using Kingmaker.ElementsSystem;
 using Kingmaker.EntitySystem.Entities;
 using Kingmaker.EntitySystem.Stats;
 using Kingmaker.Enums;
@@ -24,6 +26,7 @@ using Kingmaker.UnitLogic;
 using Kingmaker.UnitLogic.Abilities;
 using Kingmaker.UnitLogic.Abilities.Blueprints;
 using Kingmaker.UnitLogic.Abilities.Components.Base;
+using Kingmaker.UnitLogic.ActivatableAbilities;
 using Kingmaker.UnitLogic.Buffs;
 using Kingmaker.UnitLogic.Buffs.Blueprints;
 using Kingmaker.UnitLogic.Class.Kineticist;
@@ -44,6 +47,161 @@ using UnityEngine.Serialization;
 
 namespace BrawlerClassWrath.NewMechanics
 {
+
+    [ComponentName("FactMechanics/Add caster level for buff")]
+    [AllowMultipleComponents]
+    [AllowedOn(typeof(BlueprintUnitFact), false)]
+    [TypeId("df54612927934178a42d5dbc3372cede")]
+    public class AddCasterLevelForBuff : UnitFactComponentDelegate, IInitiatorRulebookHandler<RuleCalculateAbilityParams>, IRulebookHandler<RuleCalculateAbilityParams>, ISubscriber, IInitiatorRulebookSubscriber
+    {
+        // Token: 0x17001FAC RID: 8108
+        // (get) Token: 0x0600BE38 RID: 48696 RVA: 0x0030277F File Offset: 0x0030097F
+        public BlueprintBuff Spell
+        {
+            get
+            {
+                BlueprintBuffReference spell = this.m_Spell;
+                if (spell == null)
+                {
+                    return null;
+                }
+                return spell.Get();
+            }
+        }
+
+        // Token: 0x0600BE39 RID: 48697 RVA: 0x00302792 File Offset: 0x00300992
+        public void OnEventAboutToTrigger(RuleCalculateAbilityParams evt)
+        {
+            if(evt.Blueprint as BlueprintBuff != null)
+            {
+                if (evt.Blueprint as BlueprintBuff == Spell)
+                {
+                    evt.AddBonusCasterLevel(this.Bonus, this.Descriptor);
+                }
+            }
+
+        }
+
+        // Token: 0x0600BE3A RID: 48698 RVA: 0x00003AE3 File Offset: 0x00001CE3
+        public void OnEventDidTrigger(RuleCalculateAbilityParams evt)
+        {
+        }
+
+        // Token: 0x04007CA1 RID: 31905
+        [SerializeField]
+        [FormerlySerializedAs("Spell")]
+        public BlueprintBuffReference m_Spell;
+
+        // Token: 0x04007CA2 RID: 31906
+        public int Bonus;
+
+        // Token: 0x04007CA3 RID: 31907
+        public ModifierDescriptor Descriptor = ModifierDescriptor.UntypedStackable;
+    }
+
+    [TypeId("d05e64da5b1e4fcaaabcd134ed868257")]
+    public class IncreaseResourcesByClassWithArchetype : UnitFactComponentDelegate, IResourceAmountBonusHandler, IUnitSubscriber, ISubscriber
+    {
+        public BlueprintAbilityResource Resource;
+        public BlueprintCharacterClass CharacterClass;
+        public BlueprintArchetype Archetype = null;
+        public int base_value = 0;
+
+        public void CalculateMaxResourceAmount(BlueprintAbilityResource resource, ref int bonus)
+        {
+            if (!this.Fact.Active || (resource != this.Resource))
+                return;
+            int classLevel = this.Owner.Progression.GetClassLevel(this.CharacterClass);
+            if (Archetype == null || this.Owner.Progression.IsArchetype(Archetype))
+            {
+                bonus += classLevel + base_value;
+            }
+        }
+    }
+
+    [TypeId("b4951c6e7af543ecbe4bde7d75d5bcab")]
+    public class ContextActionCasterSkillCheck : ContextAction
+    {
+        public StatType Stat;
+        public bool UseCustomDC;//if false will be used against main target hd
+        public ContextValue CustomDC = 0;
+        public ActionList Success = Helpers.CreateActionList();
+        public ActionList Failure = Helpers.CreateActionList();
+        public ContextValue bonus = 0;
+
+        public override void RunAction()
+        {
+            if (this.Context.MaybeCaster == null)
+            {
+                Main.Log("Caster unit is missing.");
+            }
+            else
+            {
+                int num = bonus.Calculate(this.Context);
+                var rule_skill_check = new RuleSkillCheck(this.Context.MaybeCaster, this.Stat, this.UseCustomDC ? this.CustomDC.Calculate(this.Context) : ((this.Target.Unit?.Descriptor?.Progression.CharacterLevel).GetValueOrDefault() + 10));
+                rule_skill_check.ShowAnyway = true;
+                if (num != 0)
+                {
+                    rule_skill_check.Bonus.AddModifier(num, ModifierDescriptor.UntypedStackable);
+                }
+                if (this.Context.TriggerRule<RuleSkillCheck>(rule_skill_check).Success)
+                    this.Success.Run();
+                else
+                    this.Failure.Run();
+            }
+        }
+
+        public override string GetCaption()
+        {
+            return string.Format("Caster skill check {0} {1}", (object)this.Stat, this.UseCustomDC ? (object)string.Format("(DC: {0})", (object)this.CustomDC) : (object)"");
+        }
+    }
+
+    [AllowMultipleComponents]
+    [ComponentName("Saving throw bonus against fact from caster")]
+    [AllowedOn(typeof(BlueprintUnitFact))]
+    [TypeId("2c5f80fd923145e29aa0ca30d6d4661d")]
+    public class SavingThrowBonusAgainstFactFromCaster : UnitFactComponentDelegate, IGlobalRulebookHandler<RuleSavingThrow>, IRulebookHandler<RuleSavingThrow>, ISubscriber, IGlobalRulebookSubscriber
+    {
+        public BlueprintUnitFact CheckedFact;
+        public ModifierDescriptor Descriptor;
+        public ContextValue Value;
+        public bool will = true;
+        public bool reflex = true;
+        public bool fortitude = true;
+
+        public void OnEventAboutToTrigger(RuleSavingThrow evt)
+        {
+            UnitDescriptor descriptor = evt.Reason.Caster?.Descriptor;
+            if (descriptor == null)
+                return;
+            int bonus = Value.Calculate(this.Fact.MaybeContext);
+            foreach (var b in descriptor.Buffs)
+            {
+                if (b.Blueprint == CheckedFact && b.Context.MaybeCaster == evt.Initiator)
+                {
+                    if (will)
+                    {
+                        evt.AddTemporaryModifier(evt.Initiator.Stats.SaveWill.AddModifier(bonus, Fact, this.Descriptor));
+                    }
+                    if (reflex)
+                    {
+                        evt.AddTemporaryModifier(evt.Initiator.Stats.SaveReflex.AddModifier(bonus, Fact, this.Descriptor));
+                    }
+                    if (fortitude)
+                    {
+                        evt.AddTemporaryModifier(evt.Initiator.Stats.SaveFortitude.AddModifier(bonus, Fact, this.Descriptor));
+                    }
+                    return;
+                }
+            }
+
+        }
+
+        public void OnEventDidTrigger(RuleSavingThrow evt)
+        {
+        }
+    }
 
     [AllowedOn(typeof(BlueprintUnitFact))]
     [AllowMultipleComponents]

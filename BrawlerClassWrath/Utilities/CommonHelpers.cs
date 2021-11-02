@@ -11,12 +11,15 @@ using Kingmaker.Designers.Mechanics.Facts;
 using Kingmaker.ElementsSystem;
 using Kingmaker.EntitySystem.Stats;
 using Kingmaker.Enums;
+using Kingmaker.Localization;
 using Kingmaker.ResourceLinks;
 using Kingmaker.RuleSystem;
 using Kingmaker.UnitLogic;
 using Kingmaker.UnitLogic.Abilities.Blueprints;
 using Kingmaker.UnitLogic.Abilities.Components;
+using Kingmaker.UnitLogic.Abilities.Components.Base;
 using Kingmaker.UnitLogic.Abilities.Components.CasterCheckers;
+using Kingmaker.UnitLogic.ActivatableAbilities;
 using Kingmaker.UnitLogic.Buffs.Blueprints;
 using Kingmaker.UnitLogic.FactLogic;
 using Kingmaker.UnitLogic.Mechanics;
@@ -24,6 +27,7 @@ using Kingmaker.UnitLogic.Mechanics.Actions;
 using Kingmaker.UnitLogic.Mechanics.Components;
 using Kingmaker.UnitLogic.Mechanics.Conditions;
 using Kingmaker.UnitLogic.Mechanics.Properties;
+using Kingmaker.Utility;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -52,6 +56,79 @@ namespace BrawlerClassWrath.Utilities
         public static BlueprintFeature vermin = Resources.GetBlueprint<BlueprintFeature>("09478937695300944a179530664e42ec");
         public static BlueprintFeature incorporeal = Resources.GetBlueprint<BlueprintFeature>("c4a7f98d743bc784c9d4cf2105852c39");
 
+        public static LocalizedString tenMinPerLevelDuration = Resources.GetBlueprint<BlueprintAbility>("5b77d7cc65b8ab74688e74a37fc2f553").LocalizedDuration; // barkskin
+        public static LocalizedString minutesPerLevelDuration = Resources.GetBlueprint<BlueprintAbility>("ef768022b0785eb43a18969903c537c4").LocalizedDuration; // shield
+        public static LocalizedString hourPerLevelDuration = Resources.GetBlueprint<BlueprintAbility>("9e1ad5d6f87d19e4d8883d63a6e35568").LocalizedDuration; // mage armor
+        public static LocalizedString roundsPerLevelDuration = Resources.GetBlueprint<BlueprintAbility>("486eaff58293f6441a5c2759c4872f98").LocalizedDuration; // haste
+        public static LocalizedString oneRoundDuration = Resources.GetBlueprint<BlueprintAbility>("2c38da66e5a599347ac95b3294acbe00").LocalizedDuration; // true strike
+        public static LocalizedString oneMinuteDuration = Resources.GetBlueprint<BlueprintAbility>("93f391b0c5a99e04e83bbfbe3bb6db64").LocalizedDuration; // protection from evil communal
+        public static LocalizedString reflexHalfDamage = Resources.GetBlueprint<BlueprintAbility>("2d81362af43aeac4387a3d4fced489c3").LocalizedSavingThrow; // fireball
+        public static LocalizedString savingThrowNone = Resources.GetBlueprint<BlueprintAbility>("b6010dda6333bcf4093ce20f0063cd41").LocalizedSavingThrow; // frigid touch
+        public static LocalizedString willNegates = Resources.GetBlueprint<BlueprintAbility>("8bc64d869456b004b9db255cdd1ea734").LocalizedSavingThrow; //bane
+        public static LocalizedString fortNegates = Resources.GetBlueprint<BlueprintAbility>("48e2744846ed04b4580be1a3343a5d3d").LocalizedSavingThrow; //contagion
+
+
+        public static AddFeatureOnClassLevel CreateAddFeatureOnClassLevel(this BlueprintFeature feat, int level, BlueprintCharacterClass[] classes, BlueprintArchetype[] archetypes, bool before = false)
+        {
+            var a = Helpers.Create<AddFeatureOnClassLevel>();
+            a.name = $"AddFeatureOnClassLevel${feat.name}";
+            a.Level = level;
+            a.BeforeThisLevel = before;
+            a.m_Feature = feat.ToReference<BlueprintFeatureReference>();
+            a.m_Class = classes[0].ToReference<BlueprintCharacterClassReference>();
+            BlueprintCharacterClassReference[] addClasses = new BlueprintCharacterClassReference[classes.Count() - 1];
+
+            for(var i = 1; i < addClasses.Count(); i++)
+            {
+                addClasses[i] = classes[i].ToReference<BlueprintCharacterClassReference>();
+            }
+            a.m_AdditionalClasses = addClasses;
+            BlueprintArchetypeReference[] addArchs = new BlueprintArchetypeReference[archetypes.Count() - 1];
+
+            for (var i = 1; i < addArchs.Count(); i++)
+            {
+                addArchs[i] = archetypes[i].ToReference<BlueprintArchetypeReference>();
+            }
+            a.m_Archetypes = archetypes == null ? new BlueprintArchetypeReference[0] : addArchs;
+            return a;
+        }
+        public static AbilityTargetsAround CreateAbilityTargetsAround(Feet radius, TargetType targetType, ConditionsChecker conditions = null, Feet spreadSpeed = default(Feet), bool includeDead = false)
+        {
+            var around = Helpers.Create<AbilityTargetsAround>();
+            around.m_Radius = radius;
+            around.m_TargetType = targetType;
+            around.m_IncludeDead = includeDead;
+            around.m_Condition = conditions ?? new ConditionsChecker() { Conditions = Array.Empty<Condition>() };
+            around.m_SpreadSpeed = spreadSpeed;
+            return around;
+        }
+
+        public static void setMiscAbilityParametersSingleTargetRangedHarmful(this BlueprintAbility ability, bool works_on_allies = false,
+                                                               Kingmaker.Visual.Animation.Kingmaker.Actions.UnitAnimationActionCastSpell.CastAnimationStyle animation = Kingmaker.Visual.Animation.Kingmaker.Actions.UnitAnimationActionCastSpell.CastAnimationStyle.Point,
+                                                               Kingmaker.View.Animation.CastAnimationStyle animation_style = Kingmaker.View.Animation.CastAnimationStyle.CastActionPoint)
+        {
+            ability.CanTargetFriends = works_on_allies;
+            ability.CanTargetEnemies = true;
+            ability.CanTargetSelf = false;
+            ability.CanTargetPoint = false;
+            ability.EffectOnEnemy = AbilityEffectOnUnit.Harmful;
+            ability.EffectOnAlly = works_on_allies ? AbilityEffectOnUnit.Harmful : AbilityEffectOnUnit.None;
+            ability.Animation = animation;
+            ability.AnimationStyle = animation_style;
+        }
+
+        public static AbilitySpawnFx createAbilitySpawnFx(string asset_id, AbilitySpawnFxAnchor position_anchor = AbilitySpawnFxAnchor.None,
+                                                                           AbilitySpawnFxAnchor orientation_anchor = AbilitySpawnFxAnchor.None,
+                                                                           AbilitySpawnFxAnchor anchor = AbilitySpawnFxAnchor.None)
+        {
+            var a = Helpers.Create<AbilitySpawnFx>();
+            a.PrefabLink = createPrefabLink(asset_id);
+            a.PositionAnchor = position_anchor;
+            a.OrientationAnchor = orientation_anchor;
+            a.Anchor = anchor;
+
+            return a;
+        }
 
         static public ContextActionRemoveBuffFromCaster createContextActionRemoveBuffFromCaster(BlueprintBuff buff, int delay = 0)
         {
@@ -150,6 +227,23 @@ namespace BrawlerClassWrath.Utilities
             return a;
         }
 
+
+        static public BlueprintFeature ActivatableAbilityToFeature(BlueprintActivatableAbility ability, bool hide = true, string guid = "")
+        {
+            var feature = CreateFeature(ability.name + "Feature",
+                                                     ability.Name,
+                                                     ability.Description,
+                                                     ability.Icon,
+                                                     FeatureGroup.None,
+                                                     CreateAddFact(ability)
+                                                     );
+            if (hide)
+            {
+                feature.HideInCharacterSheetAndLevelUp = true;
+                feature.HideInUI = true;
+            }
+            return feature;
+        }
         static public BlueprintFeature AbilityToFeature(BlueprintAbility ability, bool hide = true)
         {
             var feature = CreateFeature(ability.name + "Feature",
@@ -287,7 +381,7 @@ namespace BrawlerClassWrath.Utilities
             ability.Range = range;
             ability.LocalizedDuration = Main.MakeLocalizedString($"{name}.Duration", duration);
             ability.LocalizedSavingThrow = Main.MakeLocalizedString($"{name}.SavingThrow", savingThrow);
-            
+           
             return ability;
         }
 
@@ -362,12 +456,13 @@ namespace BrawlerClassWrath.Utilities
             params BlueprintComponent[] components)
         {
             var buff = Helpers.CreateBuff(name);
-            buff.name = name;
             buff.FxOnStart = fxOnStart ?? new PrefabLink();
             buff.FxOnRemove = new PrefabLink();
             buff.SetComponents(components);
             buff.SetNameDescription(displayName, description);
             buff.m_Icon = icon;
+            buff.Ranks = 1;
+            buff.IsClassFeature = true;
             return buff;
         }
 
@@ -676,6 +771,8 @@ namespace BrawlerClassWrath.Utilities
         {
             var feat = Helpers.CreateBlueprint<BlueprintFeature>(name);
             SetFeatureInfo(feat, displayName, description, icon, group, components);
+            feat.Ranks = 1;
+            feat.IsClassFeature = true;
             return feat;
         }
 
@@ -703,33 +800,5 @@ namespace BrawlerClassWrath.Utilities
 
         }
 
-        public static void SetComponents(this BlueprintScriptableObject obj, IEnumerable<BlueprintComponent> components)
-        {
-            SetComponents(obj, components.ToArray());
-        }
-
-        public static void SetComponents(this BlueprintScriptableObject obj, params BlueprintComponent[] components)
-        {
-            // Fix names of components. Generally this doesn't matter, but if they have serialization state,
-            // then their name needs to be unique.
-            var names = new HashSet<string>();
-            foreach (var c in components)
-            {
-                if (string.IsNullOrEmpty(c.name))
-                {
-                    c.name = $"${c.GetType().Name}";
-                }
-                if (!names.Add(c.name))
-                {
-                 //   SaveCompatibility.CheckComponent(obj, c);
-                    string name;
-                    for (int i = 0; !names.Add(name = $"{c.name}${i}"); i++) ;
-                    c.name = name;
-                }
-               // Log.Validate(c, obj);
-            }
-
-            obj.ComponentsArray = components;
-        }
     }
 }

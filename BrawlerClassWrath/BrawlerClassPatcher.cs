@@ -47,6 +47,7 @@ using Kingmaker.RuleSystem;
 using Kingmaker.Enums.Damage;
 using Kingmaker.UnitLogic.Alignments;
 using System.Collections.Generic;
+using Kingmaker.UnitLogic.Abilities.Components.Base;
 
 namespace BrawlerClassWrath
 {
@@ -86,6 +87,14 @@ namespace BrawlerClassWrath
 
         static public BlueprintArchetype snakebite_striker;
         static public BlueprintFeature opportunist;
+
+
+        static public BlueprintArchetype steel_breaker;
+        static public BlueprintFeature exploit_weakness;
+        static public BlueprintFeature sunder_training;
+        static public BlueprintFeature disarm_training;
+        
+
         static void Postfix()
         {
             if (Initialized) return;
@@ -159,10 +168,9 @@ namespace BrawlerClassWrath
                 perfect_warrior.ToReference<BlueprintFeatureReference>()
             };
             createWildChild();
-          //  createExemplar();
-           // createMutagenicMauler();
+
             createSnakebiteStriker();
-           // createSteelBreaker();
+            createSteelBreaker();
             createVenomfist();
             BrawlerClass.m_Archetypes = new BlueprintArchetypeReference[] { wild_child.ToReference<BlueprintArchetypeReference>(),
                 venomfist.ToReference<BlueprintArchetypeReference>(),
@@ -1271,6 +1279,140 @@ namespace BrawlerClassWrath
             };
         }
 
+
+        // STEEL-BREAKER
+
+        static void createSteelBreaker()
+        {
+            steel_breaker = Helpers.CreateBlueprint<BlueprintArchetype>("SteelBreakerBrawler", a =>
+            {
+                a.LocalizedName = Helpers.CreateString($"{a.name}.Name", "Steel-Breaker");
+                a.LocalizedDescription = Helpers.CreateString($"{a.name}.Description", "The steel-breaker studies destruction and practices it as an art form. She knows every defense has a breaking point, and can shatter those defenses with carefully planned strikes.");
+            });
+            steel_breaker.m_ParentClass = BrawlerClass;
+
+            createExploitWeakness();
+            createSunderAndDisarmTraining();
+
+            steel_breaker.RemoveFeatures = new LevelEntry[]
+            {
+                Helpers.LevelEntry(3, maneuver_training[0]),
+                Helpers.LevelEntry(5, brawlers_strike_magic),
+                Helpers.LevelEntry(7, maneuver_training[1]),
+                Helpers.LevelEntry(9, brawlers_strike_cold_iron_and_silver),
+                Helpers.LevelEntry(11, maneuver_training[2]),
+                Helpers.LevelEntry(12, brawlers_strike_alignment),
+                Helpers.LevelEntry(15, maneuver_training[3]),
+                Helpers.LevelEntry(17, brawlers_strike_adamantine),
+                Helpers.LevelEntry(19, maneuver_training[4]),
+            };
+
+            steel_breaker.AddFeatures = new LevelEntry[] {Helpers.LevelEntry(3, sunder_training),
+                                                              Helpers.LevelEntry(5, exploit_weakness),
+                                                              Helpers.LevelEntry(7, disarm_training),
+                                                         };
+
+            brawler_progression.UIGroups = brawler_progression.UIGroups.AddToArray(Helpers.CreateUIGroup(sunder_training, exploit_weakness, disarm_training));
+        }
+
+
+        static void createExploitWeakness()
+        {
+            var description = "At 5th level, as a swift action a steel-breaker can observe a creature or object to find its weak point by succeeding at a Wisdom check, adding her brawler level against a DC of 10 + target’s HD. If it succeeds, the steel-breaker gains a +2 bonus on attack rolls until the end of her turn, and any attacks she makes until the end of her turn ignore the creature's  DR.\n"
+                               + "A steel-breaker can instead use this ability as a swift action to analyze the movements and expressions of one creature within 30 feet, granting a bonus on Reflex saving throws, as well as a dodge bonus to AC against that opponent equal to 1/2 her brawler level until the start of her next turn.";
+
+            var attack_buff = CommonHelpers.CreateBuff("SteelBreakerExplotWeaknessAttackBuff",
+                                                 "Exploit Weakness: Attack Bonus",
+                                                 description,
+                                                 Helpers.GetIcon("2c38da66e5a599347ac95b3294acbe00"), //true strike
+                                                 null,
+                                                 Helpers.Create<IgnoreTargetDR>(i => i.CheckCaster = true),
+                                                 Helpers.Create<AttackBonusAgainstTarget>(a => { a.CheckCaster = true; a.Value = 2; })
+                                                 );
+
+            var defense_buff = CommonHelpers.CreateBuff("SteelBreakerExplotWeaknessDefenseBuff",
+                                     "Exploit Weakness: Defense Bonus",
+                                     description,
+                                     Helpers.GetIcon("9e1ad5d6f87d19e4d8883d63a6e35568"), //mage armor
+                                     null,
+                                     Helpers.Create<ACBonusAgainstTarget>(i => { i.CheckCaster = true; i.Value = Helpers.CreateContextValue(AbilityRankType.Default); i.Descriptor = ModifierDescriptor.Dodge; }),
+                                     Helpers.CreateContextRankConfig(ContextRankBaseValueType.ClassLevel, classes: getBrawlerArray(), progression: ContextRankProgression.Div2)
+                                     );
+
+            exploit_weakness = CommonHelpers.CreateFeature("SteelBreakerExploitWeaknessFeature",
+                                                     "Exploit Weakness",
+                                                     description,
+                                                     attack_buff.Icon,
+                                                     FeatureGroup.None,
+                                                     Helpers.Create<SavingThrowBonusAgainstFactFromCaster>(a =>
+                                                     {
+                                                         a.Value = Helpers.CreateContextValue(AbilityRankType.Default);
+                                                         a.Descriptor = ModifierDescriptor.UntypedStackable;
+                                                         a.reflex = true;
+                                                         a.fortitude = false;
+                                                         a.will = false;
+                                                         a.CheckedFact = defense_buff;
+                                                     }),
+                                                     Helpers.CreateContextRankConfig(ContextRankBaseValueType.ClassLevel, classes: getBrawlerArray(), progression: ContextRankProgression.Div2)
+                                                     );
+
+            var buffs = new BlueprintBuff[] { attack_buff, defense_buff };
+
+            foreach (var b in buffs)
+            {
+                b.Stacking = StackingType.Stack;
+                var apply_buff = CommonHelpers.createContextActionApplyBuff(b, CommonHelpers.CreateContextDuration(1), dispellable: false);
+                var check = Helpers.Create<ContextActionCasterSkillCheck>(c =>
+                {
+                    c.Stat = StatType.Wisdom;
+                    c.Success = Helpers.CreateActionList(apply_buff);
+                    c.bonus = Helpers.CreateContextValue(AbilityRankType.StatBonus);
+                });
+                var ability = CommonHelpers.CreateAbility(b.name + "Ability",
+                                                    b.Name,
+                                                    b.Description,
+                                                    "",
+                                                    b.Icon,
+                                                    AbilityType.Extraordinary,
+                                                    CommandType.Swift,
+                                                    AbilityRange.Close,
+                                                    CommonHelpers.roundsPerLevelDuration,
+                                                    "",
+                                                    CommonHelpers.CreateRunActions(check),
+                                                    Helpers.CreateContextRankConfig(ContextRankBaseValueType.ClassLevel, classes: getBrawlerArray(),
+                                                                                    type: AbilityRankType.StatBonus),
+                                                    CommonHelpers.createAbilitySpawnFx("8de64fbe047abc243a9b4715f643739f", position_anchor: AbilitySpawnFxAnchor.None, orientation_anchor: AbilitySpawnFxAnchor.None)
+                                                    );
+                ability.setMiscAbilityParametersSingleTargetRangedHarmful(true);
+                exploit_weakness.AddComponent(CommonHelpers.CreateAddFact(ability));
+            }
+        }
+
+
+        static void createSunderAndDisarmTraining()
+        {
+            sunder_training = Helpers.CreateBlueprint<BlueprintFeature>("SteelBreakerSunderTraining");
+            sunder_training.Ranks = 1;
+            sunder_training.IsClassFeature = true;
+            sunder_training.SetComponents(maneuver_training[0].AllFeatures[3].ComponentsArray);
+            sunder_training.SetNameDescription("Sunder Training",
+                                               "At 3rd level, a steel-breaker receives additional training in sunder combat maneuvers. She gains a +2 bonus when attempting a sunder combat maneuver checks and a +2 bonus to her CMD when defending against this maneuver.\n"
+                                               + "At 7th, 11th, 15th, and 19th levels, these bonuses increase by 1.");
+            var oldComponent = sunder_training.GetComponent<ContextRankConfig>();
+            sunder_training.ReplaceComponent(oldComponent, Helpers.Create<ContextRankConfig>(c => {
+                c.m_StartLevel = -1;
+                
+                }));
+
+
+            disarm_training = Helpers.CreateBlueprint<BlueprintFeature>("SteelBreakerDisarmTraining");
+            disarm_training.Ranks = 1;
+            disarm_training.IsClassFeature = true;
+            disarm_training.SetComponents(maneuver_training[0].AllFeatures[1].ComponentsArray);
+            disarm_training.SetNameDescription("Disarm Training",
+                                               "At 7th level, a steel-breaker receives additional training in disarm combat maneuvers. She gains a +2 bonus when attempting a disarm combat maneuver checks and a +2 bonus to her CMD when defending against this maneuver.\n"
+                                               + "At 11th, 15th, and 19th levels, these bonuses increase by 1.");
+        }
 
         public class UnitPartBrawler : UnitPart
         {
