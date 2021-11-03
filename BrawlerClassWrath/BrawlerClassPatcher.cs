@@ -174,7 +174,8 @@ namespace BrawlerClassWrath
             createVenomfist();
             BrawlerClass.m_Archetypes = new BlueprintArchetypeReference[] { wild_child.ToReference<BlueprintArchetypeReference>(),
                 venomfist.ToReference<BlueprintArchetypeReference>(),
-                snakebite_striker.ToReference<BlueprintArchetypeReference>()};
+                snakebite_striker.ToReference<BlueprintArchetypeReference>(),
+            steel_breaker.ToReference<BlueprintArchetypeReference>()};
             Helpers.RegisterClass(BrawlerClass);
         }
 
