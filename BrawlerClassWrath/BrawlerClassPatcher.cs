@@ -93,7 +93,12 @@ namespace BrawlerClassWrath
         static public BlueprintFeature exploit_weakness;
         static public BlueprintFeature sunder_training;
         static public BlueprintFeature disarm_training;
-        
+
+
+        static public BlueprintArchetype turfer;
+        static public BlueprintFeatureSelection favorite_turf_selection;
+        static public BlueprintFeature[] favored_turf = new BlueprintFeature[6];
+        static public BlueprintFeature terrain_mastery;
 
         static void Postfix()
         {
@@ -172,10 +177,12 @@ namespace BrawlerClassWrath
             createSnakebiteStriker();
             createSteelBreaker();
             createVenomfist();
+            createTurfer();
             BrawlerClass.m_Archetypes = new BlueprintArchetypeReference[] { wild_child.ToReference<BlueprintArchetypeReference>(),
                 venomfist.ToReference<BlueprintArchetypeReference>(),
                 snakebite_striker.ToReference<BlueprintArchetypeReference>(),
-            steel_breaker.ToReference<BlueprintArchetypeReference>()};
+            steel_breaker.ToReference<BlueprintArchetypeReference>(),
+            turfer.ToReference<BlueprintArchetypeReference>()};
             Helpers.RegisterClass(BrawlerClass);
         }
 
@@ -406,7 +413,7 @@ namespace BrawlerClassWrath
                                                                         null,
                                                                         FeatureGroup.None
                                                                         );
-
+            brawlers_strike_alignment.m_AllFeatures = new BlueprintFeatureReference[0];
             for (int i = 0; i < damage_alignments.Length; i++)
             {
                 var strike = Helpers.CreateBlueprint<BlueprintFeature>("RMBrawlersStrike" + damage_alignments[i].ToString());
@@ -1244,16 +1251,14 @@ namespace BrawlerClassWrath
                                                               Helpers.LevelEntry(18, sneak_attack),
                                                              };
 
-            BlueprintFeature[] VitalandRowdy =
-            {
-                Resources.GetBlueprint<BlueprintFeature>("14a1fc1356df9f146900e1e42142fc9d"),
+
+            brawler_progression.UIGroups = brawler_progression.UIGroups.AddToArray(Helpers.CreateUIGroup(sneak_attack));
+            brawler_progression.UIGroups = brawler_progression.UIGroups.AddToArray(Helpers.CreateUIGroup(Resources.GetBlueprint<BlueprintFeature>("14a1fc1356df9f146900e1e42142fc9d"),
                 Resources.GetBlueprint<BlueprintFeature>("52913092cd018da47845f36e6fbe240f"),
                 opportunist,
                 Resources.GetBlueprint<BlueprintFeature>("e2d1fa11f6b095e4fb2fd1dcf5e36eb3"),
                 Resources.GetBlueprint<BlueprintFeature>("6ce0dd0cd1ef43eda9e62cdf483e05c3")
-            };
-            brawler_progression.UIGroups = brawler_progression.UIGroups.AddToArray(Helpers.CreateUIGroup(sneak_attack));
-            brawler_progression.UIGroups = brawler_progression.UIGroups.AddToArray(Helpers.CreateUIGroup(VitalandRowdy));
+                ));
 
             snakebite_striker.ReplaceClassSkills = true;
             snakebite_striker.ClassSkills = BrawlerClass.ClassSkills.AddToArray(StatType.SkillStealth);
@@ -1413,6 +1418,125 @@ namespace BrawlerClassWrath
             disarm_training.SetNameDescription("Disarm Training",
                                                "At 7th level, a steel-breaker receives additional training in disarm combat maneuvers. She gains a +2 bonus when attempting a disarm combat maneuver checks and a +2 bonus to her CMD when defending against this maneuver.\n"
                                                + "At 11th, 15th, and 19th levels, these bonuses increase by 1.");
+        }
+
+
+        // TURFER
+
+        static void createTurfer()
+        {
+            turfer = Helpers.CreateBlueprint<BlueprintArchetype>("TurferBrawler", a =>
+            {
+                a.LocalizedName = Helpers.CreateString($"{a.name}.Name", "Turfer");
+                a.LocalizedDescription = Helpers.CreateString($"{a.name}.Description", "A turfer has a mastery over particular types of terrain, and takes advantage of that in fights against their enemies.");
+            });
+            turfer.m_ParentClass = BrawlerClass;
+
+            createFavouriteTurfs();
+            createFavouriteTurfSelection();
+            createTerrainMastery();
+
+            turfer.RemoveFeatures = new LevelEntry[]
+            {
+                Helpers.LevelEntry(3, maneuver_training[0]),
+                Helpers.LevelEntry(4, knockout),
+                Helpers.LevelEntry(7, maneuver_training[1]),
+                Helpers.LevelEntry(11, maneuver_training[2]),
+                Helpers.LevelEntry(15, maneuver_training[3]),
+                Helpers.LevelEntry(19, maneuver_training[4]),
+            };
+
+            turfer.AddFeatures = new LevelEntry[] {Helpers.LevelEntry(3, favorite_turf_selection),
+                Helpers.LevelEntry(4, terrain_mastery),
+               Helpers.LevelEntry(7, favorite_turf_selection),
+               Helpers.LevelEntry(10, terrain_mastery),
+                 Helpers.LevelEntry(11, favorite_turf_selection),
+                Helpers.LevelEntry(15, favorite_turf_selection),
+                Helpers.LevelEntry(16, terrain_mastery),
+                Helpers.LevelEntry(19, favorite_turf_selection),
+             };
+
+            brawler_progression.UIGroups = brawler_progression.UIGroups.AddToArray(Helpers.CreateUIGroup(favorite_turf_selection, terrain_mastery));
+        }
+
+        static void createTerrainMastery()
+        {
+            var feat = CommonHelpers.CreateFeature($"RMTerrainMasteryFeature",
+                                             "Terrain Mastery",
+                                             "At 4th level, a turfer gains a +10 enhancement bonus to her base speed, as long as she's in one of her favored terrains. " +
+                                            "At 10th and 16th levels, this enhancement bonus increases by 10 feet. " +
+                                            "The turfer loses this ability when wearing heavy armour or carrying a heavy load.",
+                                             Resources.GetBlueprint<BlueprintFeature>("4cd06a915daa74f4094952f2b3314b3b").Icon
+                                             ,
+                                             FeatureGroup.FavoriteTerrain,
+                                             Helpers.Create<TerrainMastery>(c => {
+                                                 c.maxLoad = Encumbrance.Medium;
+                                                 c.required_armor = new ArmorProficiencyGroup[] {ArmorProficiencyGroup.Medium, ArmorProficiencyGroup.Light, ArmorProficiencyGroup.None };
+                                             }));
+            feat.Ranks = 3;
+            terrain_mastery = feat;
+
+        }
+
+        static void createFavouriteTurfSelection()
+        {
+
+            var selection = CommonHelpers.CreateFeatureSelection("TurferFavoredTurfSelection",
+                "Favoured Turf",
+                 "At 3rd level, a turfer chooses a type of terrain from the ranger’s favored terrain list. When in that type of terrain, she gains a +2 bonus on initiative checks and a +1 bonus on combat maneuver checks and to CMD. " +
+                                                "At 7th level and every 4 brawler levels thereafter, the turfer chooses an additional terrain in which to gain these bonuses. " +
+                                                "Each time, in one selected terrain(including the one just chosen), her bonus on initiative checks increases by 2," +
+                                                " and her bonus on combat maneuver checks and to CMD increases by 1.",
+                 null,
+                 FeatureGroup.FavoriteTerrain
+                );
+
+            selection.m_AllFeatures = new BlueprintFeatureReference[] {
+                favored_turf[0].ToReference<BlueprintFeatureReference>(),
+                favored_turf[1].ToReference<BlueprintFeatureReference>(),
+                favored_turf[2].ToReference<BlueprintFeatureReference>(),
+                favored_turf[3].ToReference<BlueprintFeatureReference>(),
+                favored_turf[4].ToReference<BlueprintFeatureReference>(),
+                favored_turf[5].ToReference<BlueprintFeatureReference>()
+            };
+
+            favorite_turf_selection = selection;
+        }
+        static void createFavouriteTurfs()
+        {
+            var terrains = new AreaSetting[] { AreaSetting.Abyss, AreaSetting.Desert, AreaSetting.Forest, AreaSetting.Highlands, AreaSetting.Underground, AreaSetting.Urban};
+
+            
+
+            var names = new string[] { "Abyss", "Desert", "Forest", "Highlands", "Underground", "Urban" };
+            var icons = new UnityEngine.Sprite[]
+            {
+                Resources.GetBlueprint<BlueprintFeature>("b3f10ef830d9fc44eab628ca1c1ed4fb").Icon,
+                Resources.GetBlueprint<BlueprintFeature>("fb164906bd9c9ff4c813167fcb9ae338").Icon,
+                Resources.GetBlueprint<BlueprintFeature>("19e1c418cbad1b540ad52fee0fd7f16b").Icon,
+                Resources.GetBlueprint<BlueprintFeature>("8dc89bc3543a8724895477cd1472f591").Icon,
+                Resources.GetBlueprint<BlueprintFeature>("ab32f12f647277743bbaf6e791b38c3a").Icon,
+                Resources.GetBlueprint<BlueprintFeature>("515cafe9efb8e1c48be3d6ec41bc23ef").Icon, 
+            };
+
+                for (int j = 0; j < terrains.Length; j++)
+                {
+                var feat = CommonHelpers.CreateFeature($"RMFavouriteTurf" + terrains[j].ToString() + "Feature",
+                                                 "Favored Turf" + ": " + names[j],
+                                                 "At 3rd level, a turfer chooses a type of terrain from the ranger’s favored terrain list. When in that type of terrain, she gains a +2 bonus on initiative checks and a +1 bonus on combat maneuver checks and to CMD." +
+                                                " At 7th level and every 4 brawler levels thereafter, the turfer chooses an additional terrain in which to gain these bonuses. " +
+                                                "Each time, in one selected terrain(including the one just chosen), her bonus on initiative checks increases by 2," +
+                                                " and her bonus on combat maneuver checks and to CMD increases by 1.",
+                                                 icons[j],
+                                                 FeatureGroup.FavoriteTerrain,
+                                                 Helpers.Create<FavoredTurf>(c => {
+                                                     c.Setting = terrains[j];
+                                                 }));
+
+                favored_turf[j] = feat;
+                }
+            
+
         }
 
         public class UnitPartBrawler : UnitPart

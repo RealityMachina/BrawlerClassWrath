@@ -1,6 +1,7 @@
 ﻿using BrawlerClassWrath.Extensions;
 using BrawlerClassWrath.Utilities;
 using Kingmaker.Blueprints;
+using Kingmaker.Blueprints.Area;
 using Kingmaker.Blueprints.Classes;
 using Kingmaker.Blueprints.Classes.Selection;
 using Kingmaker.Blueprints.Facts;
@@ -35,7 +36,9 @@ using Kingmaker.UnitLogic.Mechanics.Actions;
 using Kingmaker.UnitLogic.Mechanics.Components;
 using Kingmaker.UnitLogic.Mechanics.Conditions;
 using Kingmaker.UnitLogic.Mechanics.Properties;
+using Kingmaker.UnitLogic.Parts;
 using Kingmaker.Utility;
+using Kingmaker.View;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -47,6 +50,199 @@ using UnityEngine.Serialization;
 
 namespace BrawlerClassWrath.NewMechanics
 {
+    [AllowedOn(typeof(BlueprintUnitFact), false)]
+    [AllowMultipleComponents]
+    [TypeId("ac7d45194cb349c787c8aa6119b1db43")]
+    public class TerrainMastery : UnitFactComponentDelegate, ITeleportHandler, IGlobalSubscriber, ISubscriber
+    {
+        // Token: 0x17001948 RID: 6472
+        // (get) Token: 0x0600A141 RID: 41281 RVA: 0x00298F3F File Offset: 0x0029713F
+        public bool CurrentAreaPartIsFavoredTerrain
+        {
+            get
+            {
+                return Owner.Get<UnitPartFavoredTerrain>().CurrentAreaPartIsFavoredTerrain;
+            }
+        }
+
+        // Token: 0x0600A142 RID: 41282 RVA: 0x00298F53 File Offset: 0x00297153
+        public override void OnTurnOn()
+        {
+            base.OnTurnOn();
+            this.UpdateModifiers();
+        }
+
+        // Token: 0x0600A143 RID: 41283 RVA: 0x00298F7D File Offset: 0x0029717D
+        public override void OnTurnOff()
+        {
+            base.OnTurnOff();
+            this.DeactivateModifier();
+        }
+
+        // Token: 0x0600A144 RID: 41284 RVA: 0x00298FA1 File Offset: 0x002971A1
+        private void UpdateModifiers()
+        {
+            if (this.CurrentAreaPartIsFavoredTerrain)
+            {
+                this.CheckEligibility();
+                return;
+            }
+            this.DeactivateModifier();
+        }
+
+        private int GetRank()
+        {
+            int i = 10;
+
+            i = Math.Max(10, 10 * Fact.GetRank());
+            return i;
+        }
+        private void CheckEligibility()
+        {
+
+            if (!Owner.Body.IsPolymorphed) // can't be polymorphed
+            {
+
+                bool armor_ok = false;
+                bool load_ok = false;
+
+                var load = EncumbranceHelper.GetCarryingCapacity(Owner.Descriptor).GetEncumbrance();
+                
+                if(load <= maxLoad)
+                {
+                    load_ok = true;
+                }
+                var body_armor = this.Owner.Body?.Armor?.MaybeArmor;
+                armor_ok = body_armor != null && required_armor.Contains(body_armor.Blueprint.ProficiencyGroup);
+                armor_ok = armor_ok || (body_armor == null && required_armor.Contains(ArmorProficiencyGroup.None));
+                if (!armor_ok) // armor doesn't meet requirements but does shield?
+                {
+                    var shield = this.Owner.Body?.SecondaryHand?.MaybeShield?.ArmorComponent;
+                    armor_ok = shield != null && required_armor.Contains(shield.Blueprint.ProficiencyGroup);
+                }
+
+                if (armor_ok && load_ok) // requirements met...
+                {
+
+
+                    ActivateModifier();
+                    return;
+
+                }
+
+            }
+        }
+
+
+        // Token: 0x0600A145 RID: 41285 RVA: 0x00298FB8 File Offset: 0x002971B8
+        private void ActivateModifier()
+        {
+            int value = GetRank();
+            base.Owner.Stats.Speed.AddModifierUnique(value, base.Runtime, ModifierDescriptor.Enhancement);
+
+        }
+
+        // Token: 0x0600A146 RID: 41286 RVA: 0x00299048 File Offset: 0x00297248
+        private void DeactivateModifier()
+        {
+            base.Owner.Stats.Speed.RemoveModifiersFrom(base.Runtime);
+        }
+
+        // Token: 0x0600A147 RID: 41287 RVA: 0x002990C1 File Offset: 0x002972C1
+        public void HandlePartyTeleport(AreaEnterPoint enterPoint)
+        {
+            this.UpdateModifiers();
+        }
+
+
+        public ArmorProficiencyGroup[] required_armor = new ArmorProficiencyGroup[0];
+
+        public Encumbrance maxLoad = Encumbrance.Medium;
+    }
+
+
+    [AllowedOn(typeof(BlueprintUnitFact), false)]
+    [AllowMultipleComponents]
+    [TypeId("6289f4fe3d6d414182ac383eb2cda9fe")]
+    public class FavoredTurf : UnitFactComponentDelegate, ITeleportHandler, IGlobalSubscriber, ISubscriber
+    {
+        // Token: 0x17001948 RID: 6472
+        // (get) Token: 0x0600A141 RID: 41281 RVA: 0x00298F3F File Offset: 0x0029713F
+        public bool CurrentAreaPartIsFavoredTerrain
+        {
+            get
+            {
+                return AreaService.Instance.CurrentAreaSetting == this.Setting;
+            }
+        }
+
+        // Token: 0x0600A142 RID: 41282 RVA: 0x00298F53 File Offset: 0x00297153
+        public override void OnTurnOn()
+        {
+            base.OnTurnOn();
+            base.Owner.Ensure<UnitPartFavoredTerrain>().AddEntry(this.Setting, base.Fact);
+            this.UpdateModifiers();
+        }
+
+        // Token: 0x0600A143 RID: 41283 RVA: 0x00298F7D File Offset: 0x0029717D
+        public override void OnTurnOff()
+        {
+            base.OnTurnOff();
+            base.Owner.Ensure<UnitPartFavoredTerrain>().RemoveEntry(base.Fact);
+            this.DeactivateModifier();
+        }
+
+        // Token: 0x0600A144 RID: 41284 RVA: 0x00298FA1 File Offset: 0x002971A1
+        private void UpdateModifiers()
+        {
+            if (this.CurrentAreaPartIsFavoredTerrain)
+            {
+                this.ActivateModifier();
+                return;
+            }
+            this.DeactivateModifier();
+        }
+
+        private int GetRank()
+        {
+            int i = 1;
+            foreach (Feature feature in base.Owner.Progression.Features) // this SHOULDN'T include feature selections
+            {
+                if (feature.Blueprint.name != Fact.Blueprint.name && feature.Blueprint.Groups.Contains(FeatureGroup.FavoriteTerrain))
+                {
+
+                    i++;
+                }
+            }
+            return i;
+        }
+        // Token: 0x0600A145 RID: 41285 RVA: 0x00298FB8 File Offset: 0x002971B8
+        private void ActivateModifier()
+        {
+            int value = GetRank();
+            int Bonusvalue = 2 * GetRank();
+            base.Owner.Stats.Initiative.AddModifierUnique(Bonusvalue, base.Runtime, ModifierDescriptor.UntypedStackable);
+            base.Owner.Stats.AdditionalCMB.AddModifierUnique(value, base.Runtime, ModifierDescriptor.UntypedStackable);
+            base.Owner.Stats.AdditionalCMD.AddModifierUnique(value, base.Runtime, ModifierDescriptor.UntypedStackable);
+        }
+
+        // Token: 0x0600A146 RID: 41286 RVA: 0x00299048 File Offset: 0x00297248
+        private void DeactivateModifier()
+        {
+            base.Owner.Stats.Initiative.RemoveModifiersFrom(base.Runtime);
+            base.Owner.Stats.AdditionalCMB.RemoveModifiersFrom(base.Runtime);
+            base.Owner.Stats.AdditionalCMD.RemoveModifiersFrom(base.Runtime);
+        }
+
+        // Token: 0x0600A147 RID: 41287 RVA: 0x002990C1 File Offset: 0x002972C1
+        public void HandlePartyTeleport(AreaEnterPoint enterPoint)
+        {
+            this.UpdateModifiers();
+        }
+
+        // Token: 0x04006C50 RID: 27728
+        public AreaSetting Setting;
+    }
 
     [ComponentName("FactMechanics/Add caster level for buff")]
     [AllowMultipleComponents]
