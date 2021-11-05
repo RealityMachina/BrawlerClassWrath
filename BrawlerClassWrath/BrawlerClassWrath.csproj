@@ -131,6 +131,7 @@
     <Compile Include="NewMechanics\AddBrawlerPartUnitFact.cs" />
     <Compile Include="NewMechanics\AdditionalMechanics.cs" />
     <Compile Include="NewMechanics\AddBrawlerFlurryOnActivation.cs" />
+    <Compile Include="NewMechanics\BeastWrestlingMechanics.cs" />
     <Compile Include="NewMechanics\CombatManeuverMechanics.cs" />
     <Compile Include="NewMechanics\FeralCombatTraining.cs" />
     <Compile Include="NewMechanics\PoisonMechanics.cs" />

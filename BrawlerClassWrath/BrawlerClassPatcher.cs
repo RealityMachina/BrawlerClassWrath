@@ -100,6 +100,12 @@ namespace BrawlerClassWrath
         static public BlueprintFeature[] favored_turf = new BlueprintFeature[6];
         static public BlueprintFeature terrain_mastery;
 
+        static public BlueprintArchetype beastwrestler;
+        static public BlueprintFeatureSelection beast_training_selection;
+        static public BlueprintFeature[] beast_training = new BlueprintFeature[12];
+        static public BlueprintFeature beast_defences;
+
+
         static void Postfix()
         {
             if (Initialized) return;
@@ -178,11 +184,13 @@ namespace BrawlerClassWrath
             createSteelBreaker();
             createVenomfist();
             createTurfer();
+            createBeastWrestler();
             BrawlerClass.m_Archetypes = new BlueprintArchetypeReference[] { wild_child.ToReference<BlueprintArchetypeReference>(),
                 venomfist.ToReference<BlueprintArchetypeReference>(),
                 snakebite_striker.ToReference<BlueprintArchetypeReference>(),
             steel_breaker.ToReference<BlueprintArchetypeReference>(),
-            turfer.ToReference<BlueprintArchetypeReference>()};
+            turfer.ToReference<BlueprintArchetypeReference>(),
+            beastwrestler.ToReference<BlueprintArchetypeReference>()};
             Helpers.RegisterClass(BrawlerClass);
         }
 
@@ -1536,6 +1544,340 @@ namespace BrawlerClassWrath
                 favored_turf[j] = feat;
                 }
             
+
+        }
+        // BEAST WRESTLER
+
+        static void createBeastWrestler()
+        {
+            beastwrestler = Helpers.CreateBlueprint<BlueprintArchetype>("BeastWrestlerBrawler", a =>
+            {
+                a.LocalizedName = Helpers.CreateString($"{a.name}.Name", "Beast-Wrestler");
+                a.LocalizedDescription = Helpers.CreateString($"{a.name}.Description", "For these mighty grapplers, wrestling normal opponents has lost its challenge—they seek greater targets for glory. Beast-wrestlers challenge trolls to unarmed combat, and the greatest seek out the great linnorm their lands are known for and wrestle these primeval dragons into submission.");
+            });
+            beastwrestler.m_ParentClass = BrawlerClass;
+
+
+            createBeastDefences();
+            createBeastTrainings();
+            createBeastTrainingSelection();
+
+
+            beastwrestler.RemoveFeatures = new LevelEntry[]
+            {
+                Helpers.LevelEntry(3, maneuver_training[0]),
+                Helpers.LevelEntry(4, ac_bonus),
+                Helpers.LevelEntry(7, maneuver_training[1]),
+                Helpers.LevelEntry(11, maneuver_training[2]),
+                Helpers.LevelEntry(15, maneuver_training[3]),
+                Helpers.LevelEntry(19, maneuver_training[4]),
+            };
+
+            beastwrestler.AddFeatures = new LevelEntry[] {Helpers.LevelEntry(3, beast_training_selection),
+                Helpers.LevelEntry(4, beast_defences),
+               Helpers.LevelEntry(7, beast_training_selection),
+                 Helpers.LevelEntry(11, beast_training_selection),
+                Helpers.LevelEntry(15, beast_training_selection),
+                Helpers.LevelEntry(19, beast_training_selection),
+             };
+
+            brawler_progression.UIGroups = brawler_progression.UIGroups.AddToArray(Helpers.CreateUIGroup(beast_training_selection, beast_defences));
+        }
+        static void createBeastTrainingSelection()
+        {
+                var selection = CommonHelpers.CreateFeatureSelection("BeastWrestlerFavoredEnemySelection",
+                    "Beast Training",
+                     "At 3rd level, a beast-wrestler selects a creature type from the ranger favored enemies table. The only normal humanoid subtype the beast-wrestler can select is giant. She gains a +2 bonus on combat maneuver checks and to her CMD against creatures of the type she selected." +
+                                                    "At 7th, 11th, 15th, and 19th levels, the beast - wrestler can select an additional type of creature. " +
+                                                    "In addition, at each such interval the bonuses against any one type of creature she’s chosen (including the one just selected, if so desired) increase by 2. " +
+                                                    "If a specific creature falls into more than one category, the beast-wrestler’s bonuses don’t stack; she simply uses whichever bonus is higher.",
+                     null,
+                     FeatureGroup.FavoriteTerrain
+                    );
+
+                selection.m_AllFeatures = new BlueprintFeatureReference[] {
+                    beast_training[0].ToReference<BlueprintFeatureReference>(),
+                    beast_training[1].ToReference<BlueprintFeatureReference>(),
+                    beast_training[2].ToReference<BlueprintFeatureReference>(),
+                    beast_training[3].ToReference<BlueprintFeatureReference>(),
+                    beast_training[4].ToReference<BlueprintFeatureReference>(),
+                    beast_training[5].ToReference<BlueprintFeatureReference>(),
+                    beast_training[6].ToReference<BlueprintFeatureReference>(),
+                    beast_training[7].ToReference<BlueprintFeatureReference>(),
+                    beast_training[8].ToReference<BlueprintFeatureReference>(),
+                    beast_training[9].ToReference<BlueprintFeatureReference>(),
+                    beast_training[10].ToReference<BlueprintFeatureReference>(),
+                    beast_training[11].ToReference<BlueprintFeatureReference>()
+                };
+
+                beast_training_selection = selection;
+        }
+        static void createBeastDefences()
+        {
+            beast_defences = CommonHelpers.CreateFeature("BeastDefencesRMFeature",
+                                                    "Beast Defences",
+                                                    "At 4th level, when facing enemies she selected with beast training, the beast-wrestler gains a bonus to AC equal to 1/2 her beast training bonus against that creature.",
+                                                    Helpers.GetIcon("2a6a2f8e492ab174eb3f01acf5b7c90a"), //defensive stance
+                                                    FeatureGroup.None
+                                                    );
+        }
+        static void createBeastTrainings()
+        {
+
+            var names = new string[] { "Aberrations", "Animals", "Constructs", "Dragons", "Fey", "Giants", "MagicalBeasts", "MonstrousHumanoid", "Outsider", "Plant", "Undead", "Vermin" };
+            var icons = new UnityEngine.Sprite[]
+            {
+                Resources.GetBlueprint<BlueprintFeature>("7081934ab5f8573429dbd26522adcc39").Icon,
+                Resources.GetBlueprint<BlueprintFeature>("1ef8d7ab3ca4795498ff446cb027e2f3").Icon,
+                Resources.GetBlueprint<BlueprintFeature>("6ea5a4a19ccb81a498e18a229cc5038a").Icon,
+                Resources.GetBlueprint<BlueprintFeature>("918555c021b3a2944beed35df53b4c56").Icon,
+                Resources.GetBlueprint<BlueprintFeature>("be3d454ea70a8bb468b0a8a087e7e65b").Icon, //fey
+                Resources.GetBlueprint<BlueprintFeature>("bd59614d30bcadd46bd56aabe0de819f").Icon, // giants
+                Resources.GetBlueprint<BlueprintFeature>("f807fac786faa86438428c79f5629654").Icon, //magical beasts
+                Resources.GetBlueprint<BlueprintFeature>("0fd21e10dff071e4580ef9f30a0334df").Icon, //monstrous humanoids
+                Resources.GetBlueprint<BlueprintFeature>("f643b38acc23e8e42a3ed577daeb6949").Icon,
+                Resources.GetBlueprint<BlueprintFeature>("4ae78c44858bc1942934efe7c149d039").Icon,
+                Resources.GetBlueprint<BlueprintFeature>("5941963eae3e9864d91044ba771f2cc2").Icon,
+                Resources.GetBlueprint<BlueprintFeature>("f6dac9009747b91408644fa834dd0d99").Icon,
+            };
+
+            for (int j = 0; j < names.Length; j++)
+            {
+                var newName = names[j];
+                if (names[j] == "MagicalBeasts" )
+                {
+                    newName = "Magical Beasts";
+                }
+                else if(names[j] == "MonstrousHumanoid")
+                {
+                    newName = "Monstrous Humanoids";
+                }
+                var feat = CommonHelpers.CreateFeature($"RMBeastTraining" + names[j] + "Feature",
+                                                 "Beast Training" + ": " + newName,
+                                                 "At 3rd level, a beast-wrestler selects a creature type from the ranger favored enemies table. The only normal humanoid subtype the beast-wrestler can select is giant. She gains a +2 bonus on combat maneuver checks and to her CMD against creatures of the type she selected." +
+                                                "At 7th, 11th, 15th, and 19th levels, the beast - wrestler can select an additional type of creature. " +
+                                                "In addition, at each such interval the bonuses against any one type of creature she’s chosen (including the one just selected, if so desired) increase by 2. " +
+                                                "If a specific creature falls into more than one category, the beast-wrestler’s bonuses don’t stack; she simply uses whichever bonus is higher.",
+                                                 icons[j],
+                                                 FeatureGroup.FavoriteEnemy);
+
+                switch (j)
+                {
+                    case 0: //aberrations
+                        feat.AddComponent(Helpers.Create<BeastTraining>(c => {
+                            c.m_CheckedFacts = new BlueprintUnitFactReference[]
+                            {
+                                Resources.GetBlueprint<BlueprintFeature>("3bec99efd9a363242a6c8d9957b75e91").ToReference<BlueprintUnitFactReference>(),
+                                Resources.GetBlueprint<BlueprintFeature>("82574f7d14a28e64fab8867fbaa17715").ToReference<BlueprintUnitFactReference>() //instant enemy buff
+                            };
+                        }));
+                        feat.AddComponent(Helpers.Create<BeastDefences>(c => {
+                            c.m_Facts = new BlueprintUnitFactReference[]
+                            {
+                                Resources.GetBlueprint<BlueprintFeature>("3bec99efd9a363242a6c8d9957b75e91").ToReference<BlueprintUnitFactReference>(),
+                                Resources.GetBlueprint<BlueprintFeature>("82574f7d14a28e64fab8867fbaa17715").ToReference<BlueprintUnitFactReference>() //instant enemy buff
+                            };
+                            c.requiredFact = beast_defences.ToReference<BlueprintUnitFactReference>();
+                        }));
+                        break;
+                    case 1: // animals
+                        feat.AddComponent(Helpers.Create<BeastTraining>(c => {
+                            c.m_CheckedFacts = new BlueprintUnitFactReference[]
+                            {
+                                Resources.GetBlueprint<BlueprintFeature>("a95311b3dc996964cbaa30ff9965aaf6").ToReference<BlueprintUnitFactReference>(),
+                                Resources.GetBlueprint<BlueprintFeature>("82574f7d14a28e64fab8867fbaa17715").ToReference<BlueprintUnitFactReference>() //instant enemy buff
+                            };
+                        }));
+                        feat.AddComponent(Helpers.Create<BeastDefences>(c => {
+                            c.m_Facts = new BlueprintUnitFactReference[]
+                            {
+                                Resources.GetBlueprint<BlueprintFeature>("a95311b3dc996964cbaa30ff9965aaf6").ToReference<BlueprintUnitFactReference>(),
+                                Resources.GetBlueprint<BlueprintFeature>("82574f7d14a28e64fab8867fbaa17715").ToReference<BlueprintUnitFactReference>() //instant enemy buff
+                            };
+                            c.requiredFact = beast_defences.ToReference<BlueprintUnitFactReference>();
+                        }));
+                        break;
+                    case 2: // constructs
+                        feat.AddComponent(Helpers.Create<BeastTraining>(c => {
+                            c.m_CheckedFacts = new BlueprintUnitFactReference[]
+                            {
+                                Resources.GetBlueprint<BlueprintFeature>("fd389783027d63343b4a5634bd81645f").ToReference<BlueprintUnitFactReference>(),
+                                Resources.GetBlueprint<BlueprintFeature>("82574f7d14a28e64fab8867fbaa17715").ToReference<BlueprintUnitFactReference>() //instant enemy buff
+                            };
+                        }));
+                        feat.AddComponent(Helpers.Create<BeastDefences>(c => {
+                            c.m_Facts = new BlueprintUnitFactReference[]
+                            {
+                                Resources.GetBlueprint<BlueprintFeature>("fd389783027d63343b4a5634bd81645f").ToReference<BlueprintUnitFactReference>(),
+                                Resources.GetBlueprint<BlueprintFeature>("82574f7d14a28e64fab8867fbaa17715").ToReference<BlueprintUnitFactReference>() //instant enemy buff
+                            };
+                            c.requiredFact = beast_defences.ToReference<BlueprintUnitFactReference>();
+                        }));
+                        break;
+                    case 3: // dragons
+                        feat.AddComponent(Helpers.Create<BeastTraining>(c => {
+                            c.m_CheckedFacts = new BlueprintUnitFactReference[]
+                            {
+                                Resources.GetBlueprint<BlueprintFeature>("455ac88e22f55804ab87c2467deff1d6").ToReference<BlueprintUnitFactReference>(),
+                                Resources.GetBlueprint<BlueprintFeature>("82574f7d14a28e64fab8867fbaa17715").ToReference<BlueprintUnitFactReference>() //instant enemy buff
+                            };
+                        }));
+                        feat.AddComponent(Helpers.Create<BeastDefences>(c => {
+                            c.m_Facts = new BlueprintUnitFactReference[]
+                            {
+                                Resources.GetBlueprint<BlueprintFeature>("455ac88e22f55804ab87c2467deff1d6").ToReference<BlueprintUnitFactReference>(),
+                                Resources.GetBlueprint<BlueprintFeature>("82574f7d14a28e64fab8867fbaa17715").ToReference<BlueprintUnitFactReference>() //instant enemy buff
+                            };
+                            c.requiredFact = beast_defences.ToReference<BlueprintUnitFactReference>();
+                        }));
+                        break;
+                    case 4: // fey
+                        feat.AddComponent(Helpers.Create<BeastTraining>(c => {
+                            c.m_CheckedFacts = new BlueprintUnitFactReference[]
+                            {
+                                Resources.GetBlueprint<BlueprintFeature>("018af8005220ac94a9a4f47b3e9c2b4e").ToReference<BlueprintUnitFactReference>(),
+                                Resources.GetBlueprint<BlueprintFeature>("82574f7d14a28e64fab8867fbaa17715").ToReference<BlueprintUnitFactReference>() //instant enemy buff
+                            };
+                        }));
+                        feat.AddComponent(Helpers.Create<BeastDefences>(c => {
+                            c.m_Facts = new BlueprintUnitFactReference[]
+                            {
+                                Resources.GetBlueprint<BlueprintFeature>("018af8005220ac94a9a4f47b3e9c2b4e").ToReference<BlueprintUnitFactReference>(),
+                                Resources.GetBlueprint<BlueprintFeature>("82574f7d14a28e64fab8867fbaa17715").ToReference<BlueprintUnitFactReference>() //instant enemy buff
+                            };
+                            c.requiredFact = beast_defences.ToReference<BlueprintUnitFactReference>();
+                        }));
+                        break;
+                    case 5: // giants
+                        feat.AddComponent(Helpers.Create<BeastTraining>(c => {
+                            c.m_CheckedFacts = new BlueprintUnitFactReference[]
+                            {
+                                Resources.GetBlueprint<BlueprintFeature>("f9c388137f4faa74aac9065a68b56880").ToReference<BlueprintUnitFactReference>(),
+                                Resources.GetBlueprint<BlueprintFeature>("82574f7d14a28e64fab8867fbaa17715").ToReference<BlueprintUnitFactReference>() //instant enemy buff
+                            };
+                        }));
+                        feat.AddComponent(Helpers.Create<BeastDefences>(c => {
+                            c.m_Facts = new BlueprintUnitFactReference[]
+                            {
+                                Resources.GetBlueprint<BlueprintFeature>("f9c388137f4faa74aac9065a68b56880").ToReference<BlueprintUnitFactReference>(),
+                                Resources.GetBlueprint<BlueprintFeature>("82574f7d14a28e64fab8867fbaa17715").ToReference<BlueprintUnitFactReference>() //instant enemy buff
+                            };
+                            c.requiredFact = beast_defences.ToReference<BlueprintUnitFactReference>();
+                        }));
+                        break;
+                    case 6: // magical beasts
+                        feat.AddComponent(Helpers.Create<BeastTraining>(c => {
+                            c.m_CheckedFacts = new BlueprintUnitFactReference[]
+                            {
+                                Resources.GetBlueprint<BlueprintFeature>("625827490ea69d84d8e599a33929fdc6").ToReference<BlueprintUnitFactReference>(),
+                                Resources.GetBlueprint<BlueprintFeature>("82574f7d14a28e64fab8867fbaa17715").ToReference<BlueprintUnitFactReference>() //instant enemy buff
+                            };
+                        }));
+                        feat.AddComponent(Helpers.Create<BeastDefences>(c => {
+                            c.m_Facts = new BlueprintUnitFactReference[]
+                            {
+                                Resources.GetBlueprint<BlueprintFeature>("625827490ea69d84d8e599a33929fdc6").ToReference<BlueprintUnitFactReference>(),
+                                Resources.GetBlueprint<BlueprintFeature>("82574f7d14a28e64fab8867fbaa17715").ToReference<BlueprintUnitFactReference>() //instant enemy buff
+                            };
+                            c.requiredFact = beast_defences.ToReference<BlueprintUnitFactReference>();
+                        }));
+                        break;
+                    case 7: // monstrous humanoid
+                        feat.AddComponent(Helpers.Create<BeastTraining>(c => {
+                            c.m_CheckedFacts = new BlueprintUnitFactReference[]
+                            {
+                                Resources.GetBlueprint<BlueprintFeature>("57614b50e8d86b24395931fffc5e409b").ToReference<BlueprintUnitFactReference>(),
+                                Resources.GetBlueprint<BlueprintFeature>("82574f7d14a28e64fab8867fbaa17715").ToReference<BlueprintUnitFactReference>() //instant enemy buff
+                            };
+                        }));
+                        feat.AddComponent(Helpers.Create<BeastDefences>(c => {
+                            c.m_Facts = new BlueprintUnitFactReference[]
+                            {
+                                Resources.GetBlueprint<BlueprintFeature>("57614b50e8d86b24395931fffc5e409b").ToReference<BlueprintUnitFactReference>(),
+                                Resources.GetBlueprint<BlueprintFeature>("82574f7d14a28e64fab8867fbaa17715").ToReference<BlueprintUnitFactReference>() //instant enemy buff
+                            };
+                            c.requiredFact = beast_defences.ToReference<BlueprintUnitFactReference>();
+                        }));
+                        break;
+                    case 8: // outsider
+                        feat.AddComponent(Helpers.Create<BeastTraining>(c => {
+                            c.m_CheckedFacts = new BlueprintUnitFactReference[]
+                            {
+                                Resources.GetBlueprint<BlueprintFeature>("b7f02ba92b363064fb873963bec275ee").ToReference<BlueprintUnitFactReference>(), //aasimar
+                                Resources.GetBlueprint<BlueprintFeature>("9054d3988d491d944ac144e27b6bc318").ToReference<BlueprintUnitFactReference>(),//outsiders
+                                Resources.GetBlueprint<BlueprintFeature>("82574f7d14a28e64fab8867fbaa17715").ToReference<BlueprintUnitFactReference>() //instant enemy buff
+                            };
+                        }));
+                        feat.AddComponent(Helpers.Create<BeastDefences>(c =>
+                        {
+                            c.m_Facts = new BlueprintUnitFactReference[]
+                            {
+                                Resources.GetBlueprint<BlueprintFeature>("b7f02ba92b363064fb873963bec275ee").ToReference<BlueprintUnitFactReference>(), //aasimar
+                                Resources.GetBlueprint<BlueprintFeature>("9054d3988d491d944ac144e27b6bc318").ToReference<BlueprintUnitFactReference>(),//outsiders
+                                Resources.GetBlueprint<BlueprintFeature>("82574f7d14a28e64fab8867fbaa17715").ToReference<BlueprintUnitFactReference>() //instant enemy buff
+                            };
+                            c.requiredFact = beast_defences.ToReference<BlueprintUnitFactReference>();
+                        }));
+                        break;
+                    case 9: // plant
+                        feat.AddComponent(Helpers.Create<BeastTraining>(c => {
+                            c.m_CheckedFacts = new BlueprintUnitFactReference[]
+                            {
+                                Resources.GetBlueprint<BlueprintFeature>("706e61781d692a042b35941f14bc41c5").ToReference<BlueprintUnitFactReference>(),
+                                Resources.GetBlueprint<BlueprintFeature>("82574f7d14a28e64fab8867fbaa17715").ToReference<BlueprintUnitFactReference>() //instant enemy buff
+                            };
+                        }));
+                        feat.AddComponent(Helpers.Create<BeastDefences>(c => {
+                            c.m_Facts = new BlueprintUnitFactReference[]
+                            {
+                                Resources.GetBlueprint<BlueprintFeature>("706e61781d692a042b35941f14bc41c5").ToReference<BlueprintUnitFactReference>(),
+                                Resources.GetBlueprint<BlueprintFeature>("82574f7d14a28e64fab8867fbaa17715").ToReference<BlueprintUnitFactReference>() //instant enemy buff
+                            };
+                            c.requiredFact = beast_defences.ToReference<BlueprintUnitFactReference>();
+                        }));
+                        break;
+                    case 10: // undead
+                        feat.AddComponent(Helpers.Create<BeastTraining>(c => {
+                            c.m_CheckedFacts = new BlueprintUnitFactReference[]
+                            {
+                                Resources.GetBlueprint<BlueprintFeature>("734a29b693e9ec346ba2951b27987e33").ToReference<BlueprintUnitFactReference>(),
+                                Resources.GetBlueprint<BlueprintFeature>("82574f7d14a28e64fab8867fbaa17715").ToReference<BlueprintUnitFactReference>() //instant enemy buff
+                            };
+                        }));
+                        feat.AddComponent(Helpers.Create<BeastDefences>(c => {
+                            c.m_Facts = new BlueprintUnitFactReference[]
+                            {
+                                Resources.GetBlueprint<BlueprintFeature>("734a29b693e9ec346ba2951b27987e33").ToReference<BlueprintUnitFactReference>(),
+                                Resources.GetBlueprint<BlueprintFeature>("82574f7d14a28e64fab8867fbaa17715").ToReference<BlueprintUnitFactReference>() //instant enemy buff
+                            };
+                            c.requiredFact = beast_defences.ToReference<BlueprintUnitFactReference>();
+                        }));
+                        break;
+                    case 11: // vermin
+                        feat.AddComponent(Helpers.Create<BeastTraining>(c => {
+                            c.m_CheckedFacts = new BlueprintUnitFactReference[]
+                            {
+                                Resources.GetBlueprint<BlueprintFeature>("09478937695300944a179530664e42ec").ToReference<BlueprintUnitFactReference>(),
+                                Resources.GetBlueprint<BlueprintFeature>("82574f7d14a28e64fab8867fbaa17715").ToReference<BlueprintUnitFactReference>() //instant enemy buff
+                            };
+                        }));
+                        feat.AddComponent(Helpers.Create<BeastDefences>(c => {
+                            c.m_Facts = new BlueprintUnitFactReference[]
+                            {
+                                Resources.GetBlueprint<BlueprintFeature>("09478937695300944a179530664e42ec").ToReference<BlueprintUnitFactReference>(),
+                                Resources.GetBlueprint<BlueprintFeature>("82574f7d14a28e64fab8867fbaa17715").ToReference<BlueprintUnitFactReference>() //instant enemy buff
+                            };
+                            c.requiredFact = beast_defences.ToReference<BlueprintUnitFactReference>();
+                        }));
+                        break;
+                    default:
+                        break;
+                }
+
+
+                beast_training[j] = feat;
+            }
+
 
         }
 
