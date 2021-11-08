@@ -905,11 +905,11 @@ namespace BrawlerClassWrath
             var huntsCompanionFeat = Resources.GetBlueprint<BlueprintFeatureSelection>("2995b36659b9ad3408fd26f137ee2c67");
             animal_companion.m_AllFeatures = huntsCompanionFeat.m_AllFeatures;
             animal_companion.SetNameDescription(huntsCompanionFeat);
-            animal_companion.Components = huntsCompanionFeat.Components;
+            animal_companion.SetComponents(huntsCompanionFeat.Components);
             animal_companion.SetDescription("At 1st level, a wild child forms a bond with a loyal companion that accompanies the wild child on his adventures. A wild child can begin play with any of the animals available to a druid. The wild child uses his brawler level as his effective druid level for determining the abilities of his animal companion.");
             var add_progression = Helpers.Create<AddFeatureOnApply>();
             add_progression.m_Feature = animal_companion_progression.ToReference<BlueprintFeatureReference>();
-            animal_companion.ComponentsArray[0] = add_progression;
+            animal_companion.ReplaceOneComponent<AddFeatureOnApply>(add_progression);
         }
 
         //venomous fist

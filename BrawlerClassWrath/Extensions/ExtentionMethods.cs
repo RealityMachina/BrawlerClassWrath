@@ -444,7 +444,24 @@ namespace BrawlerClassWrath.Extensions {
                 action.Actions = Helpers.CreateActionList(game_action);
             }
         }
-
+        public static void ReplaceOneComponent<T>(this BlueprintScriptableObject blueprint, BlueprintComponent newComponent) where T : BlueprintComponent
+        {
+            BlueprintComponent[] compnents_to_remove = blueprint.ComponentsArray;
+            bool found = false;
+            for (int i = 0; i < compnents_to_remove.Length; i++)
+            {
+                if (compnents_to_remove[i] is T)
+                {
+                    blueprint.RemoveComponent(compnents_to_remove[i]);
+                    found = true;
+                    break;
+                }
+            }
+            if (found)
+            {
+                blueprint.AddComponent(newComponent);
+            }
+        }
         public static void ReplaceComponent(this BlueprintScriptableObject blueprint, BlueprintComponent oldComponent, BlueprintComponent newComponent) {
             BlueprintComponent[] compnents_to_remove = blueprint.ComponentsArray;
             bool found = false;
