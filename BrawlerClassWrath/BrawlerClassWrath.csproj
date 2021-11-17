@@ -135,6 +135,8 @@
     <Compile Include="NewMechanics\CombatManeuverMechanics.cs" />
     <Compile Include="NewMechanics\FeralCombatTraining.cs" />
     <Compile Include="NewMechanics\PoisonMechanics.cs" />
+    <Compile Include="NewMechanics\ResourceMechanics.cs" />
+    <Compile Include="NewMechanics\TurnActionMechanics.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Resources.cs" />
     <Compile Include="Settings.cs" />

@@ -68,7 +68,8 @@ namespace BrawlerClassWrath.Utilities
         public static LocalizedString fortNegates = Resources.GetBlueprint<BlueprintAbility>("48e2744846ed04b4580be1a3343a5d3d").LocalizedSavingThrow; //contagion
 
 
-        public static AddFeatureOnClassLevel CreateAddFeatureOnClassLevel(this BlueprintFeature feat, int level, BlueprintCharacterClass[] classes, BlueprintArchetype[] archetypes, bool before = false)
+
+        public static AddFeatureOnClassLevel CreateAddFeatureOnClassLevel(this BlueprintFeature feat, int level, BlueprintCharacterClass[] classes, BlueprintArchetype[] archetypes = null, bool before = false)
         {
             var a = Helpers.Create<AddFeatureOnClassLevel>();
             a.name = $"AddFeatureOnClassLevel${feat.name}";

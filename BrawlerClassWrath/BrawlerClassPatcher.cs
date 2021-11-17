@@ -48,6 +48,7 @@ using Kingmaker.Enums.Damage;
 using Kingmaker.UnitLogic.Alignments;
 using System.Collections.Generic;
 using Kingmaker.UnitLogic.Abilities.Components.Base;
+using Kingmaker.UnitLogic.Mechanics.Conditions;
 
 namespace BrawlerClassWrath
 {
@@ -105,6 +106,16 @@ namespace BrawlerClassWrath
         static public BlueprintFeature[] beast_training = new BlueprintFeature[12];
         static public BlueprintFeature beast_defences;
 
+
+        static public BlueprintArchetype exemplar;
+        static public BlueprintFeature call_to_arms;
+        static public BlueprintFeature inspire_courage;
+        static public BlueprintFeature inspire_greatness;
+        static public BlueprintFeature inspire_heroics;
+        static public BlueprintFeature field_instruction;
+        static public BlueprintAbility field_instruction_ability;
+        static public BlueprintFeature performance_resource_feature;
+        static public BlueprintFeature inspiring_prowess;
 
         static void Postfix()
         {
@@ -185,12 +196,14 @@ namespace BrawlerClassWrath
             createVenomfist();
             createTurfer();
             createBeastWrestler();
+            createExemplar();
             BrawlerClass.m_Archetypes = new BlueprintArchetypeReference[] { wild_child.ToReference<BlueprintArchetypeReference>(),
                 venomfist.ToReference<BlueprintArchetypeReference>(),
                 snakebite_striker.ToReference<BlueprintArchetypeReference>(),
             steel_breaker.ToReference<BlueprintArchetypeReference>(),
             turfer.ToReference<BlueprintArchetypeReference>(),
-            beastwrestler.ToReference<BlueprintArchetypeReference>()};
+            beastwrestler.ToReference<BlueprintArchetypeReference>(),
+            exemplar.ToReference<BlueprintArchetypeReference>()};
             Helpers.RegisterClass(BrawlerClass);
         }
 
@@ -1881,6 +1894,297 @@ namespace BrawlerClassWrath
 
         }
 
+
+        // EXEMPLAR
+        static void createExemplar()
+        {
+
+            exemplar =  Helpers.CreateBlueprint<BlueprintArchetype>("BrawlerExemplar", a =>
+            {
+                a.LocalizedName = Helpers.CreateString($"{a.name}.Name", "Exemplar");
+                a.LocalizedDescription = Helpers.CreateString($"{a.name}.Description", "A versatile soldier who inspires her companions with her fighting prowess, an exemplar is at home on the front lines of battles anywhere.");
+            });
+            exemplar.m_ParentClass = BrawlerClass;
+
+            var improved_unarmed_strike = Resources.GetBlueprint<BlueprintFeature>("7812ad3672a4b9a4fb894ea402095167");
+            createCallToArms();
+            createInspiringProwess();
+            createFieldInstruction();
+
+            exemplar.RemoveFeatures = new LevelEntry[]
+            {
+                Helpers.LevelEntry(1, unarmed_strike, improved_unarmed_strike),
+                Helpers.LevelEntry(3, maneuver_training[0]),
+                Helpers.LevelEntry(4, ac_bonus),
+                Helpers.LevelEntry(5, brawlers_strike_magic, close_weapon_mastery),
+                Helpers.LevelEntry(7, maneuver_training[1]),
+                Helpers.LevelEntry(9, brawlers_strike_cold_iron_and_silver),
+                Helpers.LevelEntry(11, maneuver_training[2]),
+                Helpers.LevelEntry(12, brawlers_strike_alignment),
+                Helpers.LevelEntry(15, maneuver_training[3]),
+                Helpers.LevelEntry(17, brawlers_strike_adamantine),
+                Helpers.LevelEntry(19, maneuver_training[4]),
+                Helpers.LevelEntry(20, perfect_warrior),
+            };
+
+            exemplar.AddFeatures = new LevelEntry[] {Helpers.LevelEntry(1, call_to_arms),
+                                                     Helpers.LevelEntry(3, inspiring_prowess, inspire_courage, performance_resource_feature),
+                                                     Helpers.LevelEntry(5, field_instruction),
+                                                     Helpers.LevelEntry(11, inspire_greatness),
+                                                     Helpers.LevelEntry(15, inspire_heroics)
+                                                    };
+
+            brawler_progression.UIGroups = brawler_progression.UIGroups.AddToArray(Helpers.CreateUIGroup(call_to_arms, inspiring_prowess, field_instruction) );
+            brawler_progression.UIGroups = brawler_progression.UIGroups.AddToArray(Helpers.CreateUIGroup(inspire_courage, inspire_greatness, inspire_heroics));
+
+                                                                                  
+            exemplar.OverrideAttributeRecommendations = true;
+            exemplar.RecommendedAttributes = BrawlerClass.RecommendedAttributes.AddToArray(StatType.Charisma);
+        }
+
+
+        static void createInspiringProwess()
+        {
+            var resource = Resources.GetBlueprint<BlueprintAbilityResource>("e190ba276831b5c4fa28737e5e49e6a6");
+            //ClassToProgression.addClassToResource(brawler_class, new BlueprintArchetype[] { exemplar }, resource, library.Get<BlueprintCharacterClass>("772c83a25e2268e448e841dcd548235f"));
+
+            var bardCourage = Resources.GetBlueprint<BlueprintActivatableAbility>("70274c5aa9124424c984217b62dabee8");
+
+
+            var inspire_courage_ability = Helpers.CreateBlueprint<BlueprintActivatableAbility>("ExemplarInspireCourageToggleAbility", c=> {
+                c.m_Buff = bardCourage.m_Buff;
+                c.SetNameDescription(bardCourage);
+                c.SetDescription("A 3rd level exemplar can use his inspiring prowess to inspire courage in his allies (including himself), bolstering them against fear and improving their combat abilities. To be affected, an ally must be able to perceive the evangelist's performance. An affected ally receives a +1 morale bonus on saving throws against charm and fear effects and a +1 competence bonus on attack and weapon damage rolls. At 7th level, and every six exemplar levels thereafter, this bonus increases by +1, to a maximum of +4 at 19th level.");
+                c.m_ActivateWithUnitCommand = bardCourage.m_ActivateWithUnitCommand;
+                c.m_SelectTargetAbility = bardCourage.m_SelectTargetAbility;
+                c.Group = bardCourage.Group;
+                c.WeightInGroup = bardCourage.WeightInGroup;
+                c.DeactivateIfCombatEnded = true;
+                c.DeactivateIfOwnerDisabled = true;
+                c.ActivationType = AbilityActivationType.WithUnitCommand;
+                c.ResourceAssetIds = bardCourage.ResourceAssetIds;
+                c.m_Icon = bardCourage.m_Icon;
+                c.SetComponents(bardCourage.Components);
+            });
+
+            var inspire_courage_buff = Resources.GetBlueprint<BlueprintBuff>("6d6d9e06b76f5204a8b7856c78607d5d ");
+
+            var buffConfig = inspire_courage_buff.GetComponent<ContextRankConfig>();
+
+            buffConfig.m_AdditionalArchetypes = buffConfig.m_AdditionalArchetypes.AddToArray(exemplar.ToReference<BlueprintArchetypeReference>());
+            buffConfig.m_Class = buffConfig.m_Class.AddToArray(BrawlerClass.ToReference<BlueprintCharacterClassReference>());
+
+
+            var bardGreatness = Resources.GetBlueprint<BlueprintActivatableAbility>("be36959e44ac33641ba9e0204f3d227b");
+
+            var inspire_greatness_ability = Helpers.CreateBlueprint<BlueprintActivatableAbility>("ExemplarInspireGreatnessToggleAbility", c => {
+                c.m_Buff = bardGreatness.m_Buff;
+                c.SetNameDescription(bardGreatness);
+                c.SetDescription("An exemplar of 11th level or higher can use his inspiring prowess to inspire greatness in all allies within 30 feet, granting extra fighting capability. A creature inspired with greatness gains 2 bonus Hit Dice (d10s), the commensurate number of temporary hit points (apply the target's Constitution modifier, if any, to these bonus Hit Dice), a +2 competence bonus on attack rolls, and a +1 competence bonus on Fortitude saves.");
+                c.m_ActivateWithUnitCommand = bardGreatness.m_ActivateWithUnitCommand;
+                c.m_SelectTargetAbility = bardGreatness.m_SelectTargetAbility;
+                c.Group = bardGreatness.Group;
+                c.WeightInGroup = bardGreatness.WeightInGroup;
+                c.DeactivateIfCombatEnded = true;
+                c.DeactivateIfOwnerDisabled = true;
+                c.ActivationType = AbilityActivationType.WithUnitCommand;
+                c.ResourceAssetIds = bardGreatness.ResourceAssetIds;
+                c.m_Icon = bardGreatness.m_Icon;
+                c.SetComponents(bardGreatness.Components);
+            });
+
+
+            var bardHeroics = Resources.GetBlueprint<BlueprintActivatableAbility>("a4ce06371f09f504fa86fcf6d0e021e4");
+            var inspire_heroics_ability = Helpers.CreateBlueprint<BlueprintActivatableAbility>("ExemplarInspireHeroicsToggleAbility", c => {
+                c.m_Buff = bardHeroics.m_Buff;
+                c.SetNameDescription(bardHeroics);
+                c.SetDescription("An exemplar of 15th level or higher can inspire tremendous heroism in all allies within 30 feet. Inspired creatures gain a +4 morale bonus on saving throws and a +4 dodge bonus to AC. The effect lasts for as long as the targets are able to witness the performance.");
+                c.m_ActivateWithUnitCommand = bardHeroics.m_ActivateWithUnitCommand;
+                c.m_SelectTargetAbility = bardHeroics.m_SelectTargetAbility;
+                c.Group = bardHeroics.Group;
+                c.WeightInGroup = bardHeroics.WeightInGroup;
+                c.DeactivateIfCombatEnded = true;
+                c.DeactivateIfOwnerDisabled = true;
+                c.ActivationType = AbilityActivationType.WithUnitCommand;
+                c.ResourceAssetIds = bardHeroics.ResourceAssetIds;
+                c.m_Icon = bardHeroics.m_Icon;
+                c.SetComponents(bardHeroics.Components);
+            });
+
+
+            inspire_courage = CommonHelpers.ActivatableAbilityToFeature(inspire_courage_ability, false);
+            inspire_heroics = CommonHelpers.ActivatableAbilityToFeature(inspire_heroics_ability, false);
+            inspire_greatness = CommonHelpers.ActivatableAbilityToFeature(inspire_greatness_ability, false);
+
+            var performance_resource = Resources.GetBlueprint<BlueprintAbilityResource>("e190ba276831b5c4fa28737e5e49e6a6");
+            performance_resource_feature = Resources.GetBlueprint<BlueprintFeature>("b92bfc201c6a79e49afd0b5cfbfc269f");
+            performance_resource_feature.AddComponent(Helpers.Create<NewMechanics.IncreaseResourcesByClassWithArchetype>(i =>
+            {
+                i.Resource = performance_resource;
+                i.CharacterClass = BrawlerClass;
+                i.Archetype = exemplar;
+                i.base_value = -2;
+            }));
+
+            inspiring_prowess = CommonHelpers.CreateFeature("ExemplarInspiringProwessFeature",
+                                                      "Inspiring Prowess",
+                                                      "At 3rd level, an exemplar gains the ability to use certain bardic performances. She can use this ability for a number of rounds per day equal to 3 + her Charisma modifier; this increases by 1 round per brawler level thereafter. The exemplar’s effective bard level for this ability is equal to her brawler level – 2. At 3rd level, the exemplar can use inspire courage. At 11th level, the exemplar can use inspire greatness. At 15th level, the exemplar can use inspire heroics. Instead of the Perform skill, she activates this ability with impressive flourishes and displays of martial talent (this uses visual components).",
+                                                      null,
+                                                      FeatureGroup.None,
+                                                      Helpers.CreateContextRankConfig(ContextRankBaseValueType.ClassLevel, ContextRankProgression.BonusValue, classes: getBrawlerArray(),
+                                                                                      stepLevel: -2
+                                                                                     )
+                                                     );
+            inspiring_prowess.ReapplyOnLevelUp = true;
+        }
+
+
+        static void createCallToArms()
+        {
+            var resource = CommonHelpers.CreateAbilityResource("ExemplarCallToArmsResource", "", "", "", null);
+            resource.SetIncreasedByLevelStartPlusDivStep(3, 2, 1, 2, 1, 0, 0.0f, getBrawlerArray());
+
+            var buff = CommonHelpers.CreateBuff("CallToArmsBuff",
+                                          "Call to Arms",
+                                          "At 1st level, an exemplar rouse her allies into action. All allies within 30 feet are no longer flat-footed, even if they are surprised. Using this ability is a move action. This ability can be used 3 times per day + 1 more time per 2 exemplar levels. At 6th level, the exemplar can use it as a swift action instead. At 10th level, she can use it as a free action.",
+                                          Helpers.GetIcon("76f8f23f6502def4dbefedffdc4d4c43"),
+                                          null,
+                                          Helpers.Create<FlatFootedIgnore>(f => f.Type = FlatFootedIgnoreType.UncannyDodge)
+                                          );
+
+            var ability = CommonHelpers.CreateAbility("CallToArmsAbility",
+                                                buff.Name,
+                                                buff.Description,
+                                                "",
+                                                buff.Icon,
+                                                AbilityType.Extraordinary,
+                                                CommandType.Move,
+                                                AbilityRange.Personal,
+                                                CommonHelpers.oneRoundDuration,
+                                                "",
+                                                CommonHelpers.CreateRunActions(CommonHelpers.createContextActionApplyBuff(buff, CommonHelpers.CreateContextDuration(1), dispellable: false)),
+                                                CommonHelpers.createAbilitySpawnFx("8de64fbe047abc243a9b4715f643739f", anchor: AbilitySpawnFxAnchor.SelectedTarget, position_anchor: AbilitySpawnFxAnchor.None, orientation_anchor: AbilitySpawnFxAnchor.None),
+                                                CommonHelpers.CreateAbilityTargetsAround(30.Feet(), TargetType.Ally),
+                                                resource.CreateResourceLogic()
+                                                );
+            ability.setMiscAbilityParametersSelfOnly();
+
+            call_to_arms = CommonHelpers.AbilityToFeature(ability, false);
+            call_to_arms.AddComponent(resource.CreateAddAbilityResource());
+
+            var feature_move = CommonHelpers.CreateFeature("CallToArmsMoveFeature",
+                                                     "",
+                                                     "",
+                                                     null,
+                                                     FeatureGroup.None,
+                                                     Helpers.Create<UseAbilitiesAsSwiftAction>(m => m.abilities = new BlueprintAbility[] { ability })
+                                                     );
+
+            feature_move.HideInCharacterSheetAndLevelUp = true;
+            feature_move.HideInUI = true;
+            var feature_swift = CommonHelpers.CreateFeature("CallToArmsSwiftFeature",
+                                                     "",
+                                                     "",
+                                                     null,
+                                                     FeatureGroup.None,
+                                                     Helpers.Create<UseAbilitiesAsFreeAction>(m => m.abilities = new BlueprintAbility[] { ability })
+                                                     );
+
+            feature_swift.HideInCharacterSheetAndLevelUp = true;
+            feature_swift.HideInUI = true; 
+
+            call_to_arms.AddComponents(CommonHelpers.CreateAddFeatureOnClassLevel(feature_move, 6, getBrawlerArray()),
+                                       CommonHelpers.CreateAddFeatureOnClassLevel(feature_swift, 10, getBrawlerArray())
+                                       );
+        }
+
+
+        static void createFieldInstruction()
+        {
+            var vanguardInstruction = Resources.GetBlueprint<BlueprintAbility>("00af3b5f43aa7ae4c87bcfe4e129f6e8"); //vanguard tactician
+            field_instruction_ability = Helpers.CreateBlueprint<BlueprintAbility>("BrawlerFieldInstructionAbility", c => {
+                c.SetName("Field Instruction");
+                c.SetDescription("At 5th level, as a standard action an exemplar can grant a teamwork feat to all allies within 30 feet who can see and hear her. This teamwork feat must be one the exemplar knows or has gained with the martial flexibility ability. Allies retain the use of this teamwork feat for 3 rounds + 1 round for every 2 brawler levels. If the granted teamwork feat is one gained from martial flexibility, this duration ends immediately if the exemplar loses access to that feat. Allies don’t need to meet the prerequisites of this teamwork feat. The exemplar can use this ability once per day at 5th level, plus one additional time per day at 9th, 12th, and 17th level.");
+                c.Type = vanguardInstruction.Type;
+                c.Range = vanguardInstruction.Range;
+                c.CanTargetSelf = vanguardInstruction.CanTargetSelf;
+                c.Animation = vanguardInstruction.Animation;
+                c.AnimationStyle = vanguardInstruction.AnimationStyle;
+                c.ActionType = vanguardInstruction.ActionType;
+                c.LocalizedDuration = vanguardInstruction.LocalizedDuration;
+                c.LocalizedSavingThrow = vanguardInstruction.LocalizedSavingThrow;
+                c.MaterialComponent = vanguardInstruction.MaterialComponent;
+                c.m_Icon = vanguardInstruction.m_Icon;
+                c.SetComponents(vanguardInstruction.Components);
+            });
+            
+            var tactician_resource = CommonHelpers.CreateAbilityResource("FieldInstrucitonResource", "", "", "", null);
+            tactician_resource.name = "BrawlerTacticianResource";
+            tactician_resource.SetFixedResource(1);
+            var oldComponent = field_instruction_ability.GetComponent<AbilityResourceLogic>();
+            field_instruction_ability.ReplaceComponent(oldComponent, CommonHelpers.CreateResourceLogic(tactician_resource));
+
+            var abilities = field_instruction_ability.GetComponent<AbilityVariants>();
+            var new_abilities = new BlueprintAbilityReference[0];
+
+            foreach (var a in abilities.m_Variants)
+            {
+                var abilityToCopy = Resources.GetBlueprint<BlueprintAbility>(a.guid);
+                var new_ability = Helpers.CreateBlueprint<BlueprintAbility>(a.GetBlueprint().name.Replace("Vanguard", "Exemplar"));
+                new_ability.SetNameDescription(abilityToCopy);
+                new_ability.Type = abilityToCopy.Type;
+                new_ability.Range = abilityToCopy.Range;
+                new_ability.CanTargetSelf = abilityToCopy.CanTargetSelf;
+                new_ability.Animation = abilityToCopy.Animation;
+                new_ability.AnimationStyle = abilityToCopy.AnimationStyle;
+                new_ability.ActionType = abilityToCopy.ActionType;
+                new_ability.LocalizedDuration = abilityToCopy.LocalizedDuration;
+                new_ability.LocalizedSavingThrow = abilityToCopy.LocalizedSavingThrow;
+                new_ability.MaterialComponent = abilityToCopy.MaterialComponent;
+                new_ability.m_Icon = abilityToCopy.m_Icon;
+                new_ability.SetComponents(abilityToCopy.Components);
+                var abilityOldComponent = new_ability.GetComponent<AbilityResourceLogic>();
+                new_ability.ReplaceComponent(abilityOldComponent, CommonHelpers.CreateResourceLogic(tactician_resource));
+                new_ability.Parent = field_instruction_ability;
+                var abilityRankConfig = new_ability.GetComponent<ContextRankConfig>();
+                new_ability.ReplaceComponent(abilityRankConfig, Helpers.CreateContextRankConfig(baseValueType: ContextRankBaseValueType.ClassLevel,
+                                                                                                    progression: ContextRankProgression.DivStep,
+                                                                                                    stepLevel: 2,
+                                                                                                    classes: new BlueprintCharacterClass[] { BrawlerClass }
+                                                                                                    )
+                                                                    );
+
+
+                new_ability.SetName(abilityToCopy.Name.Replace("Tactician", "Field Instruction"));
+                new_abilities = new_abilities.AddToArray(new_ability.ToReference<BlueprintAbilityReference>());
+                //change buffs to pick name from parent ability
+            }
+
+            field_instruction_ability.GetComponent<AbilityVariants>().m_Variants = new_abilities;
+
+            field_instruction = CommonHelpers.CreateFeature("FieldInstructionFeature",
+                                                      field_instruction_ability.Name,
+                                                      field_instruction_ability.Description,
+                                                     field_instruction_ability.Icon,
+                                                     FeatureGroup.None,
+                                                     CommonHelpers.CreateAddFact(field_instruction_ability),
+                                                     CommonHelpers.CreateAddAbilityResource(tactician_resource),
+                                                     Helpers.Create<ContextIncreaseResourceAmount>(c =>
+                                                     {
+                                                         c.Value = Helpers.CreateContextValue(AbilityRankType.Default);
+                                                         c.Resource = tactician_resource;
+                                                     }),
+                                                     Helpers.CreateContextRankConfig(ContextRankBaseValueType.ClassLevel, ContextRankProgression.Custom,
+                                                                                     classes: getBrawlerArray(),
+                                                                                     customProgression: new (int, int)[] { (8, 0), (11, 1), (16, 2), (20, 3) }
+                                                                                     )
+                                                    );
+            field_instruction.ReapplyOnLevelUp = true;
+        }
+
+
+
+        // MISC
         public class UnitPartBrawler : UnitPart
         {
             [JsonProperty]
