@@ -77,15 +77,18 @@ namespace BrawlerClassWrath.Utilities
             a.BeforeThisLevel = before;
             a.m_Feature = feat.ToReference<BlueprintFeatureReference>();
             a.m_Class = classes[0].ToReference<BlueprintCharacterClassReference>();
-            BlueprintCharacterClassReference[] addClasses = new BlueprintCharacterClassReference[classes.Count() - 1];
+            BlueprintCharacterClassReference[] addClasses = new BlueprintCharacterClassReference[0];
 
             for(var i = 1; i < addClasses.Count(); i++)
             {
-                addClasses[i] = classes[i].ToReference<BlueprintCharacterClassReference>();
+                addClasses[i - 1] = classes[i].ToReference<BlueprintCharacterClassReference>();
             }
             a.m_AdditionalClasses = addClasses;
-            BlueprintArchetypeReference[] addArchs = new BlueprintArchetypeReference[archetypes.Count() - 1];
-
+            BlueprintArchetypeReference[] addArchs = new BlueprintArchetypeReference[0];
+            if (archetypes != null)
+            {
+               addArchs = new BlueprintArchetypeReference[archetypes.Count() - 1];
+            }
             for (var i = 1; i < addArchs.Count(); i++)
             {
                 addArchs[i] = archetypes[i].ToReference<BlueprintArchetypeReference>();

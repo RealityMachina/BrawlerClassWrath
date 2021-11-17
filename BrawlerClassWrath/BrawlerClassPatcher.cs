@@ -1291,10 +1291,9 @@ namespace BrawlerClassWrath
         {
             opportunist = CommonHelpers.CreateFeature("SnakebiteStrikerOpportunist",
                 "Snakebite Opportunist",
-                "",
+                "At 11th level, once per round the snakebite striker can make an attack of opportunity against an opponent who has just been struck for damage in melee by another character. This attack counts as an attack of opportunity for that round. She cannot use this ability more than once per round, even if she has the Combat Reflexes feat or a similar ability. At 19th level, she can use this ability twice per round.",
                 Resources.GetBlueprint<BlueprintFeature>("5bb6dc5ce00550441880a6ff8ad4c968").Icon, 
                 FeatureGroup.None);
-            opportunist.SetDescription(" At 11th level, once per round the snakebite striker can make an attack of opportunity against an opponent who has just been struck for damage in melee by another character. This attack counts as an attack of opportunity for that round. She cannot use this ability more than once per round, even if she has the Combat Reflexes feat or a similar ability. At 19th level, she can use this ability twice per round.");
 
             opportunist.ComponentsArray = new BlueprintComponent[]
             {
@@ -1681,14 +1680,14 @@ namespace BrawlerClassWrath
                             c.m_CheckedFacts = new BlueprintUnitFactReference[]
                             {
                                 Resources.GetBlueprint<BlueprintFeature>("3bec99efd9a363242a6c8d9957b75e91").ToReference<BlueprintUnitFactReference>(),
-                                Resources.GetBlueprint<BlueprintFeature>("82574f7d14a28e64fab8867fbaa17715").ToReference<BlueprintUnitFactReference>() //instant enemy buff
+                                Resources.GetBlueprint<BlueprintBuff>("82574f7d14a28e64fab8867fbaa17715").ToReference<BlueprintUnitFactReference>() //instant enemy buff
                             };
                         }));
                         feat.AddComponent(Helpers.Create<BeastDefences>(c => {
                             c.m_Facts = new BlueprintUnitFactReference[]
                             {
                                 Resources.GetBlueprint<BlueprintFeature>("3bec99efd9a363242a6c8d9957b75e91").ToReference<BlueprintUnitFactReference>(),
-                                Resources.GetBlueprint<BlueprintFeature>("82574f7d14a28e64fab8867fbaa17715").ToReference<BlueprintUnitFactReference>() //instant enemy buff
+                                Resources.GetBlueprint<BlueprintBuff>("82574f7d14a28e64fab8867fbaa17715").ToReference<BlueprintUnitFactReference>() //instant enemy buff
                             };
                             c.requiredFact = beast_defences.ToReference<BlueprintUnitFactReference>();
                         }));
@@ -1698,14 +1697,14 @@ namespace BrawlerClassWrath
                             c.m_CheckedFacts = new BlueprintUnitFactReference[]
                             {
                                 Resources.GetBlueprint<BlueprintFeature>("a95311b3dc996964cbaa30ff9965aaf6").ToReference<BlueprintUnitFactReference>(),
-                                Resources.GetBlueprint<BlueprintFeature>("82574f7d14a28e64fab8867fbaa17715").ToReference<BlueprintUnitFactReference>() //instant enemy buff
+                                Resources.GetBlueprint<BlueprintBuff>("82574f7d14a28e64fab8867fbaa17715").ToReference<BlueprintUnitFactReference>() //instant enemy buff
                             };
                         }));
                         feat.AddComponent(Helpers.Create<BeastDefences>(c => {
                             c.m_Facts = new BlueprintUnitFactReference[]
                             {
                                 Resources.GetBlueprint<BlueprintFeature>("a95311b3dc996964cbaa30ff9965aaf6").ToReference<BlueprintUnitFactReference>(),
-                                Resources.GetBlueprint<BlueprintFeature>("82574f7d14a28e64fab8867fbaa17715").ToReference<BlueprintUnitFactReference>() //instant enemy buff
+                                Resources.GetBlueprint<BlueprintBuff>("82574f7d14a28e64fab8867fbaa17715").ToReference<BlueprintUnitFactReference>() //instant enemy buff
                             };
                             c.requiredFact = beast_defences.ToReference<BlueprintUnitFactReference>();
                         }));
@@ -1715,14 +1714,14 @@ namespace BrawlerClassWrath
                             c.m_CheckedFacts = new BlueprintUnitFactReference[]
                             {
                                 Resources.GetBlueprint<BlueprintFeature>("fd389783027d63343b4a5634bd81645f").ToReference<BlueprintUnitFactReference>(),
-                                Resources.GetBlueprint<BlueprintFeature>("82574f7d14a28e64fab8867fbaa17715").ToReference<BlueprintUnitFactReference>() //instant enemy buff
+                                Resources.GetBlueprint<BlueprintBuff>("82574f7d14a28e64fab8867fbaa17715").ToReference<BlueprintUnitFactReference>() //instant enemy buff
                             };
                         }));
                         feat.AddComponent(Helpers.Create<BeastDefences>(c => {
                             c.m_Facts = new BlueprintUnitFactReference[]
                             {
                                 Resources.GetBlueprint<BlueprintFeature>("fd389783027d63343b4a5634bd81645f").ToReference<BlueprintUnitFactReference>(),
-                                Resources.GetBlueprint<BlueprintFeature>("82574f7d14a28e64fab8867fbaa17715").ToReference<BlueprintUnitFactReference>() //instant enemy buff
+                                Resources.GetBlueprint<BlueprintBuff>("82574f7d14a28e64fab8867fbaa17715").ToReference<BlueprintUnitFactReference>() //instant enemy buff
                             };
                             c.requiredFact = beast_defences.ToReference<BlueprintUnitFactReference>();
                         }));
@@ -1732,14 +1731,14 @@ namespace BrawlerClassWrath
                             c.m_CheckedFacts = new BlueprintUnitFactReference[]
                             {
                                 Resources.GetBlueprint<BlueprintFeature>("455ac88e22f55804ab87c2467deff1d6").ToReference<BlueprintUnitFactReference>(),
-                                Resources.GetBlueprint<BlueprintFeature>("82574f7d14a28e64fab8867fbaa17715").ToReference<BlueprintUnitFactReference>() //instant enemy buff
+                                Resources.GetBlueprint<BlueprintBuff>("82574f7d14a28e64fab8867fbaa17715").ToReference<BlueprintUnitFactReference>() //instant enemy buff
                             };
                         }));
                         feat.AddComponent(Helpers.Create<BeastDefences>(c => {
                             c.m_Facts = new BlueprintUnitFactReference[]
                             {
                                 Resources.GetBlueprint<BlueprintFeature>("455ac88e22f55804ab87c2467deff1d6").ToReference<BlueprintUnitFactReference>(),
-                                Resources.GetBlueprint<BlueprintFeature>("82574f7d14a28e64fab8867fbaa17715").ToReference<BlueprintUnitFactReference>() //instant enemy buff
+                                Resources.GetBlueprint<BlueprintBuff>("82574f7d14a28e64fab8867fbaa17715").ToReference<BlueprintUnitFactReference>() //instant enemy buff
                             };
                             c.requiredFact = beast_defences.ToReference<BlueprintUnitFactReference>();
                         }));
@@ -1749,14 +1748,14 @@ namespace BrawlerClassWrath
                             c.m_CheckedFacts = new BlueprintUnitFactReference[]
                             {
                                 Resources.GetBlueprint<BlueprintFeature>("018af8005220ac94a9a4f47b3e9c2b4e").ToReference<BlueprintUnitFactReference>(),
-                                Resources.GetBlueprint<BlueprintFeature>("82574f7d14a28e64fab8867fbaa17715").ToReference<BlueprintUnitFactReference>() //instant enemy buff
+                                Resources.GetBlueprint<BlueprintBuff>("82574f7d14a28e64fab8867fbaa17715").ToReference<BlueprintUnitFactReference>() //instant enemy buff
                             };
                         }));
                         feat.AddComponent(Helpers.Create<BeastDefences>(c => {
                             c.m_Facts = new BlueprintUnitFactReference[]
                             {
                                 Resources.GetBlueprint<BlueprintFeature>("018af8005220ac94a9a4f47b3e9c2b4e").ToReference<BlueprintUnitFactReference>(),
-                                Resources.GetBlueprint<BlueprintFeature>("82574f7d14a28e64fab8867fbaa17715").ToReference<BlueprintUnitFactReference>() //instant enemy buff
+                                Resources.GetBlueprint<BlueprintBuff>("82574f7d14a28e64fab8867fbaa17715").ToReference<BlueprintUnitFactReference>() //instant enemy buff
                             };
                             c.requiredFact = beast_defences.ToReference<BlueprintUnitFactReference>();
                         }));
@@ -1766,14 +1765,14 @@ namespace BrawlerClassWrath
                             c.m_CheckedFacts = new BlueprintUnitFactReference[]
                             {
                                 Resources.GetBlueprint<BlueprintFeature>("f9c388137f4faa74aac9065a68b56880").ToReference<BlueprintUnitFactReference>(),
-                                Resources.GetBlueprint<BlueprintFeature>("82574f7d14a28e64fab8867fbaa17715").ToReference<BlueprintUnitFactReference>() //instant enemy buff
+                                Resources.GetBlueprint<BlueprintBuff>("82574f7d14a28e64fab8867fbaa17715").ToReference<BlueprintUnitFactReference>() //instant enemy buff
                             };
                         }));
                         feat.AddComponent(Helpers.Create<BeastDefences>(c => {
                             c.m_Facts = new BlueprintUnitFactReference[]
                             {
                                 Resources.GetBlueprint<BlueprintFeature>("f9c388137f4faa74aac9065a68b56880").ToReference<BlueprintUnitFactReference>(),
-                                Resources.GetBlueprint<BlueprintFeature>("82574f7d14a28e64fab8867fbaa17715").ToReference<BlueprintUnitFactReference>() //instant enemy buff
+                                Resources.GetBlueprint<BlueprintBuff>("82574f7d14a28e64fab8867fbaa17715").ToReference<BlueprintUnitFactReference>() //instant enemy buff
                             };
                             c.requiredFact = beast_defences.ToReference<BlueprintUnitFactReference>();
                         }));
@@ -1783,14 +1782,14 @@ namespace BrawlerClassWrath
                             c.m_CheckedFacts = new BlueprintUnitFactReference[]
                             {
                                 Resources.GetBlueprint<BlueprintFeature>("625827490ea69d84d8e599a33929fdc6").ToReference<BlueprintUnitFactReference>(),
-                                Resources.GetBlueprint<BlueprintFeature>("82574f7d14a28e64fab8867fbaa17715").ToReference<BlueprintUnitFactReference>() //instant enemy buff
+                                Resources.GetBlueprint<BlueprintBuff>("82574f7d14a28e64fab8867fbaa17715").ToReference<BlueprintUnitFactReference>() //instant enemy buff
                             };
                         }));
                         feat.AddComponent(Helpers.Create<BeastDefences>(c => {
                             c.m_Facts = new BlueprintUnitFactReference[]
                             {
                                 Resources.GetBlueprint<BlueprintFeature>("625827490ea69d84d8e599a33929fdc6").ToReference<BlueprintUnitFactReference>(),
-                                Resources.GetBlueprint<BlueprintFeature>("82574f7d14a28e64fab8867fbaa17715").ToReference<BlueprintUnitFactReference>() //instant enemy buff
+                                Resources.GetBlueprint<BlueprintBuff>("82574f7d14a28e64fab8867fbaa17715").ToReference<BlueprintUnitFactReference>() //instant enemy buff
                             };
                             c.requiredFact = beast_defences.ToReference<BlueprintUnitFactReference>();
                         }));
@@ -1800,14 +1799,14 @@ namespace BrawlerClassWrath
                             c.m_CheckedFacts = new BlueprintUnitFactReference[]
                             {
                                 Resources.GetBlueprint<BlueprintFeature>("57614b50e8d86b24395931fffc5e409b").ToReference<BlueprintUnitFactReference>(),
-                                Resources.GetBlueprint<BlueprintFeature>("82574f7d14a28e64fab8867fbaa17715").ToReference<BlueprintUnitFactReference>() //instant enemy buff
+                                Resources.GetBlueprint<BlueprintBuff>("82574f7d14a28e64fab8867fbaa17715").ToReference<BlueprintUnitFactReference>() //instant enemy buff
                             };
                         }));
                         feat.AddComponent(Helpers.Create<BeastDefences>(c => {
                             c.m_Facts = new BlueprintUnitFactReference[]
                             {
                                 Resources.GetBlueprint<BlueprintFeature>("57614b50e8d86b24395931fffc5e409b").ToReference<BlueprintUnitFactReference>(),
-                                Resources.GetBlueprint<BlueprintFeature>("82574f7d14a28e64fab8867fbaa17715").ToReference<BlueprintUnitFactReference>() //instant enemy buff
+                                Resources.GetBlueprint<BlueprintBuff>("82574f7d14a28e64fab8867fbaa17715").ToReference<BlueprintUnitFactReference>() //instant enemy buff
                             };
                             c.requiredFact = beast_defences.ToReference<BlueprintUnitFactReference>();
                         }));
@@ -1818,7 +1817,7 @@ namespace BrawlerClassWrath
                             {
                                 Resources.GetBlueprint<BlueprintFeature>("b7f02ba92b363064fb873963bec275ee").ToReference<BlueprintUnitFactReference>(), //aasimar
                                 Resources.GetBlueprint<BlueprintFeature>("9054d3988d491d944ac144e27b6bc318").ToReference<BlueprintUnitFactReference>(),//outsiders
-                                Resources.GetBlueprint<BlueprintFeature>("82574f7d14a28e64fab8867fbaa17715").ToReference<BlueprintUnitFactReference>() //instant enemy buff
+                                Resources.GetBlueprint<BlueprintBuff>("82574f7d14a28e64fab8867fbaa17715").ToReference<BlueprintUnitFactReference>() //instant enemy buff
                             };
                         }));
                         feat.AddComponent(Helpers.Create<BeastDefences>(c =>
@@ -1827,7 +1826,7 @@ namespace BrawlerClassWrath
                             {
                                 Resources.GetBlueprint<BlueprintFeature>("b7f02ba92b363064fb873963bec275ee").ToReference<BlueprintUnitFactReference>(), //aasimar
                                 Resources.GetBlueprint<BlueprintFeature>("9054d3988d491d944ac144e27b6bc318").ToReference<BlueprintUnitFactReference>(),//outsiders
-                                Resources.GetBlueprint<BlueprintFeature>("82574f7d14a28e64fab8867fbaa17715").ToReference<BlueprintUnitFactReference>() //instant enemy buff
+                                Resources.GetBlueprint<BlueprintBuff>("82574f7d14a28e64fab8867fbaa17715").ToReference<BlueprintUnitFactReference>() //instant enemy buff
                             };
                             c.requiredFact = beast_defences.ToReference<BlueprintUnitFactReference>();
                         }));
@@ -1837,14 +1836,14 @@ namespace BrawlerClassWrath
                             c.m_CheckedFacts = new BlueprintUnitFactReference[]
                             {
                                 Resources.GetBlueprint<BlueprintFeature>("706e61781d692a042b35941f14bc41c5").ToReference<BlueprintUnitFactReference>(),
-                                Resources.GetBlueprint<BlueprintFeature>("82574f7d14a28e64fab8867fbaa17715").ToReference<BlueprintUnitFactReference>() //instant enemy buff
+                                Resources.GetBlueprint<BlueprintBuff>("82574f7d14a28e64fab8867fbaa17715").ToReference<BlueprintUnitFactReference>() //instant enemy buff
                             };
                         }));
                         feat.AddComponent(Helpers.Create<BeastDefences>(c => {
                             c.m_Facts = new BlueprintUnitFactReference[]
                             {
                                 Resources.GetBlueprint<BlueprintFeature>("706e61781d692a042b35941f14bc41c5").ToReference<BlueprintUnitFactReference>(),
-                                Resources.GetBlueprint<BlueprintFeature>("82574f7d14a28e64fab8867fbaa17715").ToReference<BlueprintUnitFactReference>() //instant enemy buff
+                                Resources.GetBlueprint<BlueprintBuff>("82574f7d14a28e64fab8867fbaa17715").ToReference<BlueprintUnitFactReference>() //instant enemy buff
                             };
                             c.requiredFact = beast_defences.ToReference<BlueprintUnitFactReference>();
                         }));
@@ -1854,14 +1853,14 @@ namespace BrawlerClassWrath
                             c.m_CheckedFacts = new BlueprintUnitFactReference[]
                             {
                                 Resources.GetBlueprint<BlueprintFeature>("734a29b693e9ec346ba2951b27987e33").ToReference<BlueprintUnitFactReference>(),
-                                Resources.GetBlueprint<BlueprintFeature>("82574f7d14a28e64fab8867fbaa17715").ToReference<BlueprintUnitFactReference>() //instant enemy buff
+                                Resources.GetBlueprint<BlueprintBuff>("82574f7d14a28e64fab8867fbaa17715").ToReference<BlueprintUnitFactReference>() //instant enemy buff
                             };
                         }));
                         feat.AddComponent(Helpers.Create<BeastDefences>(c => {
                             c.m_Facts = new BlueprintUnitFactReference[]
                             {
                                 Resources.GetBlueprint<BlueprintFeature>("734a29b693e9ec346ba2951b27987e33").ToReference<BlueprintUnitFactReference>(),
-                                Resources.GetBlueprint<BlueprintFeature>("82574f7d14a28e64fab8867fbaa17715").ToReference<BlueprintUnitFactReference>() //instant enemy buff
+                                Resources.GetBlueprint<BlueprintBuff>("82574f7d14a28e64fab8867fbaa17715").ToReference<BlueprintUnitFactReference>() //instant enemy buff
                             };
                             c.requiredFact = beast_defences.ToReference<BlueprintUnitFactReference>();
                         }));
@@ -1871,14 +1870,14 @@ namespace BrawlerClassWrath
                             c.m_CheckedFacts = new BlueprintUnitFactReference[]
                             {
                                 Resources.GetBlueprint<BlueprintFeature>("09478937695300944a179530664e42ec").ToReference<BlueprintUnitFactReference>(),
-                                Resources.GetBlueprint<BlueprintFeature>("82574f7d14a28e64fab8867fbaa17715").ToReference<BlueprintUnitFactReference>() //instant enemy buff
+                                Resources.GetBlueprint<BlueprintBuff>("82574f7d14a28e64fab8867fbaa17715").ToReference<BlueprintUnitFactReference>() //instant enemy buff
                             };
                         }));
                         feat.AddComponent(Helpers.Create<BeastDefences>(c => {
                             c.m_Facts = new BlueprintUnitFactReference[]
                             {
                                 Resources.GetBlueprint<BlueprintFeature>("09478937695300944a179530664e42ec").ToReference<BlueprintUnitFactReference>(),
-                                Resources.GetBlueprint<BlueprintFeature>("82574f7d14a28e64fab8867fbaa17715").ToReference<BlueprintUnitFactReference>() //instant enemy buff
+                                Resources.GetBlueprint<BlueprintBuff>("82574f7d14a28e64fab8867fbaa17715").ToReference<BlueprintUnitFactReference>() //instant enemy buff
                             };
                             c.requiredFact = beast_defences.ToReference<BlueprintUnitFactReference>();
                         }));
@@ -2129,7 +2128,7 @@ namespace BrawlerClassWrath
 
             foreach (var a in abilities.m_Variants)
             {
-                var abilityToCopy = Resources.GetBlueprint<BlueprintAbility>(a.guid);
+                var abilityToCopy = Resources.GetBlueprint<BlueprintAbility>(a.Guid);
                 var new_ability = Helpers.CreateBlueprint<BlueprintAbility>(a.GetBlueprint().name.Replace("Vanguard", "Exemplar"));
                 new_ability.SetNameDescription(abilityToCopy);
                 new_ability.Type = abilityToCopy.Type;
