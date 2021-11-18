@@ -49,6 +49,7 @@ using Kingmaker.UnitLogic.Alignments;
 using System.Collections.Generic;
 using Kingmaker.UnitLogic.Abilities.Components.Base;
 using Kingmaker.UnitLogic.Mechanics.Conditions;
+using Kingmaker.UnitLogic.Buffs.Components;
 
 namespace BrawlerClassWrath
 {
@@ -116,6 +117,15 @@ namespace BrawlerClassWrath
         static public BlueprintAbility field_instruction_ability;
         static public BlueprintFeature performance_resource_feature;
         static public BlueprintFeature inspiring_prowess;
+
+
+        static public BlueprintArchetype mutagenic_mauler;
+        static public BlueprintFeature mutagen;
+        static public BlueprintFeature mutagen_damage_bonus;
+        static public BlueprintFeatureSelection discovery;
+        static public BlueprintFeature greater_mutagen;
+        static public BlueprintFeature beastmorph_speed;
+        static public BlueprintFeature beastmorph_blindsense;
 
         static void Postfix()
         {
@@ -189,21 +199,24 @@ namespace BrawlerClassWrath
                 brawlers_flurry.ToReference<BlueprintFeatureReference>(),
                 perfect_warrior.ToReference<BlueprintFeatureReference>()
             };
-            createWildChild();
 
+            createWildChild();
             createSnakebiteStriker();
             createSteelBreaker();
             createVenomfist();
             createTurfer();
             createBeastWrestler();
             createExemplar();
+            createMutagenicMauler();
+
             BrawlerClass.m_Archetypes = new BlueprintArchetypeReference[] { wild_child.ToReference<BlueprintArchetypeReference>(),
                 venomfist.ToReference<BlueprintArchetypeReference>(),
                 snakebite_striker.ToReference<BlueprintArchetypeReference>(),
             steel_breaker.ToReference<BlueprintArchetypeReference>(),
             turfer.ToReference<BlueprintArchetypeReference>(),
             beastwrestler.ToReference<BlueprintArchetypeReference>(),
-            exemplar.ToReference<BlueprintArchetypeReference>()};
+            exemplar.ToReference<BlueprintArchetypeReference>(),
+            mutagenic_mauler.ToReference<BlueprintArchetypeReference>()};
             Helpers.RegisterClass(BrawlerClass);
         }
 
@@ -1945,6 +1958,8 @@ namespace BrawlerClassWrath
         static void createInspiringProwess()
         {
             var resource = Resources.GetBlueprint<BlueprintAbilityResource>("e190ba276831b5c4fa28737e5e49e6a6");
+            resource.m_MaxAmount.m_Class = resource.m_MaxAmount.m_Class.AddToArray(BrawlerClass.ToReference<BlueprintCharacterClassReference>());
+            resource.m_MaxAmount.m_Archetypes = resource.m_MaxAmount.m_Archetypes.AddToArray(exemplar.ToReference<BlueprintArchetypeReference>());
             //ClassToProgression.addClassToResource(brawler_class, new BlueprintArchetype[] { exemplar }, resource, library.Get<BlueprintCharacterClass>("772c83a25e2268e448e841dcd548235f"));
 
             var bardCourage = Resources.GetBlueprint<BlueprintActivatableAbility>("70274c5aa9124424c984217b62dabee8");
@@ -2182,7 +2197,221 @@ namespace BrawlerClassWrath
         }
 
 
+        //MUTAGEN MAULER
+        static void createMutagenicMauler()
+        {
 
+
+            mutagenic_mauler = Helpers.CreateBlueprint<BlueprintArchetype>("BrawlerMutagenicMauler", a =>
+            {
+                a.LocalizedName = Helpers.CreateString($"{a.name}.Name", "Mutagenic Mauler");
+                a.LocalizedDescription = Helpers.CreateString($"{a.name}.Description", "Not content with perfecting her body with natural methods, a mutagenic mauler resorts to alchemy to unlock the primal beast within.");
+            });
+            mutagenic_mauler.m_ParentClass = BrawlerClass;
+            createMutagen();
+            createBeastmorph();
+
+            mutagenic_mauler.RemoveFeatures = new LevelEntry[]
+            {
+                Helpers.LevelEntry(1, combat_feat),
+                Helpers.LevelEntry(4, ac_bonus),
+                Helpers.LevelEntry(6, combat_feat),
+                Helpers.LevelEntry(10, combat_feat),
+                Helpers.LevelEntry(12, combat_feat),
+            };
+
+            mutagenic_mauler.AddFeatures = new LevelEntry[] {Helpers.LevelEntry(1, mutagen),
+                                                     Helpers.LevelEntry(4, beastmorph_speed),
+                                                     Helpers.LevelEntry(6, mutagen_damage_bonus),
+                                                     Helpers.LevelEntry(10, discovery),
+                                                     Helpers.LevelEntry(12, greater_mutagen),
+                                                     Helpers.LevelEntry(13, beastmorph_blindsense),
+                                                    };
+
+            brawler_progression.UIGroups = brawler_progression.UIGroups.AddToArray(Helpers.CreateUIGroup(mutagen, beastmorph_speed, mutagen_damage_bonus, discovery, greater_mutagen, beastmorph_blindsense)
+                                                                                   );
+        }
+
+
+        static void createBeastmorph()
+        {
+            beastmorph_speed = CommonHelpers.CreateFeature("MutagenicMaulerBeastmorphSpeedBonusFeature",
+                                                     "Beastmorph: Speed Bonus",
+                                                     "Starting at 4th level, a mutagenic mauler gains additional abilities when using her mutagen. At 4th level, she gains a +10 enhancement bonus to her base speed. At 13th level, the enhancement bonus to her base speed increases to +15 feet. At 18th level, the enhancement bonus to her base speed increases to +20 feet.",
+                                                     Helpers.GetIcon("4f8181e7a7f1d904fbaea64220e83379"), //expeditious retreat
+                                                     FeatureGroup.None
+                                                     );
+
+            var beastmorph_speed_buff = CommonHelpers.CreateBuff("MutagenicMaulerBeastmorphSpeedBonusBuff",
+                                         beastmorph_speed.Name,
+                                         beastmorph_speed.Description,
+                                         beastmorph_speed.Icon,
+                                         null,
+                                         CommonHelpers.CreateAddContextStatBonus(StatType.Speed, ModifierDescriptor.Enhancement),
+                                         Helpers.CreateContextRankConfig(ContextRankBaseValueType.ClassLevel, ContextRankProgression.Custom,
+                                                                         classes: getBrawlerArray(),
+                                                                         customProgression: new (int, int)[] { (12, 10), (17, 15), (20, 20) }
+                                                                         )
+                                         );
+
+
+            beastmorph_blindsense = CommonHelpers.CreateFeature("MutagenicMaulerBeastmorphBlindsenseFeature",
+                                         "Beastmorph: Blindsense",
+                                         "At 13th level, a mutagenic mauler gains blindsense ability within 30 feet, when using her mutagen.",
+                                         Helpers.GetIcon("b3da3fbee6a751d4197e446c7e852bcb"), //true seeing
+                                         FeatureGroup.None
+                                         );
+
+            var beastmorph_blindsense_buff = CommonHelpers.CreateBuff("MutagenicMaulerBeastmorphBlindsenseBuff",
+                                         beastmorph_blindsense.Name,
+                                         beastmorph_blindsense.Description,
+                                         beastmorph_blindsense.Icon,
+                                         null,
+                                         CommonHelpers.createBlindsense(30)
+                                         );
+
+            var mutagens = new BlueprintFeature[]
+            {
+                mutagen,
+                //Resources.GetBlueprint<BlueprintFeature>("cee8f65448ce71c4b8b8ca13751dd8ea"), //mutagen
+                 //Resources.GetBlueprint<BlueprintFeature>("76c61966afdd82048911f3d63c6fe0bc"), //greater mutagen
+                 greater_mutagen,
+                 Resources.GetBlueprint<BlueprintFeature>("6f5cb651e26bd97428523061b07ffc85"), //grand mutagen
+
+            };
+
+            foreach (var m in mutagens)
+            {
+                var comp = m.GetComponent<AddFacts>();
+
+                foreach (var f in comp.Facts)
+                {
+                    var buff = CommonHelpers.extractActions<ContextActionApplyBuff>((f as BlueprintAbility).GetComponent<AbilityEffectRunAction>().Actions.Actions)[0].Buff;
+
+                    CommonHelpers.addContextActionApplyBuffOnFactsToActivatedAbilityBuffNoRemove(buff, beastmorph_speed_buff, beastmorph_speed);
+                    CommonHelpers.addContextActionApplyBuffOnFactsToActivatedAbilityBuffNoRemove(buff, beastmorph_blindsense_buff, beastmorph_blindsense);
+                }
+            }
+
+        }
+
+
+        static void createMutagen()
+        {
+            var alchemist_mutagen = Resources.GetBlueprint<BlueprintFeature>("cee8f65448ce71c4b8b8ca13751dd8ea");
+
+
+            mutagen = CommonHelpers.CreateFeature(
+                "MutagenicMaulerMutagen",
+                alchemist_mutagen.m_DisplayName,
+                "At 1st level, a mutagenic mauler discovers how to create a mutagen that she can imbibe in order to heighten her physical prowess, though at the cost of her personality. This functions as an alchemist’s mutagen and uses the brawler’s class level as her alchemist level for this ability (alchemist levels stack with brawler levels for determining the effect of this ability). A mutagenic mauler counts as an alchemist for the purpose of imbibing a mutagen prepared by someone else.",
+                alchemist_mutagen.m_Icon,
+                FeatureGroup.None,
+                alchemist_mutagen.Components
+                ); 
+                
+             
+            mutagen.GetComponent<AddFacts>().DoNotRestoreMissingFacts = true;
+            foreach (var c in mutagen.GetComponents<ContextRankConfig>().ToArray())
+            {
+                var newRankConfig = c;
+
+                newRankConfig.m_AdditionalArchetypes = c.m_AdditionalArchetypes.AddToArray(mutagenic_mauler.ToReference<BlueprintArchetypeReference>());
+                newRankConfig.m_Class = c.m_Class.AddToArray(BrawlerClass.ToReference<BlueprintCharacterClassReference>());
+                mutagen.ReplaceComponent(c, newRankConfig);
+            }
+           // alchemist_mutagen.AddComponent(Helpers.Create<NewMechanics.FeatureReplacement>(f => f.replacement_feature = mutagen));
+           // mutagen.SetDescription("At 1st level, a mutagenic mauler discovers how to create a mutagen that she can imbibe in order to heighten her physical prowess, though at the cost of her personality. This functions as an alchemist’s mutagen and uses the brawler’s class level as her alchemist level for this ability (alchemist levels stack with brawler levels for determining the effect of this ability). A mutagenic mauler counts as an alchemist for the purpose of imbibing a mutagen prepared by someone else.");
+            var mutagen_damage_buff = CommonHelpers.CreateBuff("MutagenincMaulerDamageBonusBuff",
+                                                         "Mutagen Damage Bonus",
+                                                         "At 6th level, a mutagenic mauler gains a +2 bonus on damage rolls when she attacks in melee while in her mutagenic form. This bonus increases to +3 at 11th level, and to +4 at 16th level.",
+                                                         Helpers.GetIcon("85067a04a97416949b5d1dbf986d93f3"), //stone fist
+                                                         null,
+                                                         Helpers.Create<WeaponAttackTypeDamageBonus>(w =>
+                                                         {
+                                                             w.Value = Helpers.CreateContextValue(AbilityRankType.Default);
+                                                             w.Type = WeaponRangeType.Melee;
+                                                             w.Descriptor = ModifierDescriptor.UntypedStackable;
+                                                             w.AttackBonus = 1;
+                                                         }
+                                                         ),
+                                                         Helpers.CreateContextRankConfig(ContextRankBaseValueType.ClassLevel, classes: getBrawlerArray(),
+                                                                                         progression: ContextRankProgression.StartPlusDivStep,
+                                                                                         startLevel: 1, stepLevel: 5, max: 4)
+                                                       );
+
+            mutagen_damage_bonus = CommonHelpers.CreateFeature("MutagenicMaulerDamageBonusFeature",
+                                                         mutagen_damage_buff.Name,
+                                                         mutagen_damage_buff.Description,
+                                                         mutagen_damage_buff.Icon,
+                                                         FeatureGroup.None);
+
+            var mutagens = new BlueprintFeature[]
+            {
+                mutagen,
+                //Resources.GetBlueprint<BlueprintFeature>("cee8f65448ce71c4b8b8ca13751dd8ea"), //mutagen
+                 Resources.GetBlueprint<BlueprintFeature>("76c61966afdd82048911f3d63c6fe0bc"), //greater mutagen
+                 Resources.GetBlueprint<BlueprintFeature>("6f5cb651e26bd97428523061b07ffc85"), //grand mutagen
+
+            };
+
+            foreach (var m in mutagens)
+            {
+                var comp = m.GetComponent<AddFacts>();
+
+                foreach (var f in comp.Facts)
+                {
+                    var buff = CommonHelpers.extractActions<ContextActionApplyBuff>((f as BlueprintAbility).GetComponent<AbilityEffectRunAction>().Actions.Actions)[0].Buff;
+
+                    CommonHelpers.addContextActionApplyBuffOnFactsToActivatedAbilityBuffNoRemove(buff, mutagen_damage_buff, mutagen_damage_bonus);
+                }
+            }
+
+            var alch_discovery = Resources.GetBlueprint<BlueprintFeatureSelection>("cd86c437488386f438dcc9ae727ea2a6");
+            discovery = CommonHelpers.CreateFeatureSelection(
+                "MutagenicMaulerDiscovery",
+                alch_discovery.m_DisplayName,
+                "At 10th level, a mutagenic mauler learns one of the following alchemist discoveries: feral mutagen, preserve organs, spontaneous healing.",
+                alch_discovery.m_Icon,
+                FeatureGroup.Discovery
+                );
+                
+
+            discovery.m_AllFeatures = new BlueprintFeatureReference[]
+            {
+                Resources.GetBlueprint<BlueprintFeature>("fd5f7b37ab4301c48a88cc196ee5f0ce").ToReference<BlueprintFeatureReference>(), //feral mutagen
+                Resources.GetBlueprint<BlueprintFeature>("76b4bb8e54f3f5c418f421684c76ef4e").ToReference<BlueprintFeatureReference>(), //preserve organs
+                Resources.GetBlueprint<BlueprintFeature>("2bc1ee626a69667469ab5c1698b99956").ToReference<BlueprintFeatureReference>(), //spontaneous healing
+            };
+
+            var spontaneous_healing_resource = Resources.GetBlueprint<BlueprintAbilityResource>("0b417a7292b2e924782ef2aab9451816");
+
+            spontaneous_healing_resource.m_MaxAmount.m_ClassDiv = spontaneous_healing_resource.m_MaxAmount.m_ClassDiv.AddToArray(BrawlerClass.ToReference<BlueprintCharacterClassReference>());
+            spontaneous_healing_resource.m_MaxAmount.m_ArchetypesDiv = spontaneous_healing_resource.m_MaxAmount.m_ArchetypesDiv.AddToArray(mutagenic_mauler.ToReference<BlueprintArchetypeReference>());
+
+            var alchemist_greater_mutagen = Resources.GetBlueprint<BlueprintFeature>("76c61966afdd82048911f3d63c6fe0bc");
+            greater_mutagen = CommonHelpers.CreateFeature(
+                "MutagenicMaulerGreaterMutagen",
+                alchemist_greater_mutagen.m_DisplayName,
+                "At 12th level, the mutagenic mauler learns the greater mutagen discovery.",
+                alchemist_greater_mutagen.m_Icon,
+                FeatureGroup.None,
+                alchemist_greater_mutagen.Components
+                );
+
+            
+            greater_mutagen.RemoveComponents<PrerequisiteClassLevel>();
+
+            foreach (var c in greater_mutagen.GetComponents<ContextRankConfig>().ToArray())
+            {
+                var newRankConfig = c;
+
+                newRankConfig.m_AdditionalArchetypes = c.m_AdditionalArchetypes.AddToArray(mutagenic_mauler.ToReference<BlueprintArchetypeReference>());
+                newRankConfig.m_Class = c.m_Class.AddToArray(BrawlerClass.ToReference<BlueprintCharacterClassReference>());
+                greater_mutagen.ReplaceComponent(c, newRankConfig);
+            }
+           // alchemist_greater_mutagen.AddComponent(Helpers.Create<NewMechanics.FeatureReplacement>(f => f.replacement_feature = greater_mutagen));
+        }
         // MISC
         public class UnitPartBrawler : UnitPart
         {

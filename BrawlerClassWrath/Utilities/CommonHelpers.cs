@@ -1,5 +1,6 @@
 ﻿using BrawlerClassWrath.Extensions;
 using BrawlerClassWrath.NewMechanics;
+using HarmonyLib;
 using Kingmaker.Blueprints;
 using Kingmaker.Blueprints.Classes;
 using Kingmaker.Blueprints.Classes.Prerequisites;
@@ -69,6 +70,93 @@ namespace BrawlerClassWrath.Utilities
 
 
 
+        static public void addContextActionApplyBuffOnConditionToActivatedAbilityBuff(BlueprintBuff target_buff, Conditional conditional_action)
+        {
+            if (target_buff.GetComponent<AddFactContextActions>() == null)
+            {
+                var context_actions = new BlueprintComponent[] { Helpers.CreateEmptyAddFactContextActions() };
+                target_buff.ComponentsArray = context_actions.AddRangeToArray(target_buff.ComponentsArray);
+            }
+
+            var activated = target_buff.GetComponent<Kingmaker.UnitLogic.Mechanics.Components.AddFactContextActions>().Activated;
+            activated.Actions = activated.Actions.AddToArray(conditional_action);
+        }
+
+        static public void addContextActionApplyBuffOnFactsToActivatedAbilityBuffNoRemove(BlueprintBuff target_buff, BlueprintBuff buff_to_add, Kingmaker.ElementsSystem.GameAction[] pre_actions,
+                                                                              params BlueprintUnitFact[] facts)
+        {
+            var condition = new Kingmaker.UnitLogic.Mechanics.Conditions.ContextConditionHasFact[facts.Length];
+            for (int i = 0; i < facts.Length; i++)
+            {
+                condition[i] = CreateConditionHasFact(facts[i]);
+            }
+            var action = CreateConditional(condition, pre_actions.AddToArray(createContextActionApplyBuff(buff_to_add, CreateContextDuration(),
+                                                                                     dispellable: false, is_child: true, is_permanent: true)));
+            addContextActionApplyBuffOnConditionToActivatedAbilityBuff(target_buff, action);
+        }
+
+
+        public static ContextConditionHasFact CreateConditionHasFact(this BlueprintUnitFact fact, bool not = false)
+        {
+            var c = Helpers.Create<ContextConditionHasFact>();
+            c.m_Fact = fact.ToReference<BlueprintUnitFactReference>();
+            c.Not = not;
+            return c;
+        }
+        static public void addContextActionApplyBuffOnFactsToActivatedAbilityBuffNoRemove(BlueprintBuff target_buff, BlueprintBuff buff_to_add, params BlueprintUnitFact[] facts)
+        {
+            addContextActionApplyBuffOnFactsToActivatedAbilityBuffNoRemove(target_buff, buff_to_add, new Kingmaker.ElementsSystem.GameAction[0], facts);
+        }
+
+        public static List<T> extractActions<T>(GameAction[] action_list) where T : GameAction
+        {
+            //we assume that only possible actions are actual actions, conditionals, ContextActionSavingThrow or ContextActionConditionalSaved
+            var found_actions = new List<T>();
+            if (action_list == null)
+            {
+                return found_actions;
+            }
+            for (int i = 0; i < action_list.Length; i++)
+            {
+                if (action_list[i] == null)
+                {
+                    continue;
+                }
+                else if (action_list[i] is T)
+                {
+                    found_actions.Add(action_list[i] as T);
+                    //continue;
+                }
+
+                if (action_list[i] is Conditional)
+                {
+                    found_actions.AddRange(extractActions<T>((action_list[i] as Conditional).IfTrue?.Actions));
+                    found_actions.AddRange(extractActions<T>((action_list[i] as Conditional).IfFalse?.Actions));
+                }
+                else if (action_list[i] is ContextActionConditionalSaved)
+                {
+                    found_actions.AddRange(extractActions<T>((action_list[i] as ContextActionConditionalSaved).Succeed?.Actions));
+                    found_actions.AddRange(extractActions<T>((action_list[i] as ContextActionConditionalSaved).Failed?.Actions));
+                }
+                else if (action_list[i] is ContextActionSavingThrow)
+                {
+                    found_actions.AddRange(extractActions<T>((action_list[i] as ContextActionSavingThrow).Actions?.Actions));
+                }
+                else if (action_list[i] is ContextActionOnContextCaster)
+                {
+                    found_actions.AddRange(extractActions<T>((action_list[i] as ContextActionOnContextCaster).Actions?.Actions));
+                }
+            }
+
+            return found_actions;
+        }
+
+        static public Blindsense createBlindsense(int range)
+        {
+            var b = Helpers.Create<Blindsense>();
+            b.Range = range.Feet();
+            return b;
+        }
         public static AddFeatureOnClassLevel CreateAddFeatureOnClassLevel(this BlueprintFeature feat, int level, BlueprintCharacterClass[] classes, BlueprintArchetype[] archetypes = null, bool before = false)
         {
             var a = Helpers.Create<AddFeatureOnClassLevel>();
