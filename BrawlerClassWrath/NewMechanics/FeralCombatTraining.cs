@@ -29,6 +29,7 @@ using Kingmaker.UnitLogic.Mechanics.Conditions;
 using Kingmaker.UnitLogic.Mechanics.ContextData;
 using Kingmaker.UnitLogic.Parts;
 using Kingmaker.Utility;
+using Kingmaker.View;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -45,7 +46,7 @@ namespace BrawlerClassWrath.NewMechanics
     [AllowMultipleComponents]
     [TypeId("1f062a8356fc4927893f2d44a9135769")]
     public class SpecificWeaponGroupOrFeralCombatFeatureUnlock : UnitFactComponentDelegate<HasArmorFeatureUnlockData>, 
-        IUnitActiveEquipmentSetHandler, IGlobalSubscriber, ISubscriber, IUnitEquipmentHandler, IUnitBuffHandler
+        IUnitActiveEquipmentSetHandler, IGlobalSubscriber, ISubscriber, IUnitEquipmentHandler, IUnitBuffHandler, ITeleportHandler
     {
         public BlueprintUnitFact NewFact
         {
@@ -202,6 +203,12 @@ namespace BrawlerClassWrath.NewMechanics
             this.CheckEligibility();                    
         }
 
+
+        public void HandlePartyTeleport(AreaEnterPoint enterPoint)
+        {
+            //we know the party moved so check
+            this.CheckEligibility();
+        }
         //public new void OnTurnOn()
         //{
         //    this.CheckEligibility();

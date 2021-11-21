@@ -816,7 +816,7 @@ namespace BrawlerClassWrath
             brawlers_flurry11.Ranks = flurry11_monk.Ranks;
             var buff = Helpers.CreateBuff("RMBrawlerTwoWeaponFlurryEnabledBuff", bp =>
             {
-                bp.SetName("Brawler’s Flurry: Use Off-Hand attacks");
+                bp.SetName("Toggle Brawler's Flurry");
                 bp.SetDescription(brawlers_flurry.Description);
                 bp.m_Icon = Helpers.GetIcon("ac8aaf29054f5b74eb18f2af950e752d");
                 bp.AddComponent(Helpers.Create<AddBrawlerFlurryOnActivation>());
@@ -2466,7 +2466,7 @@ namespace BrawlerClassWrath
                 {
                     return false;
                 }
-                if (!Owner.Body.PrimaryHand.HasWeapon || !Owner.Body.SecondaryHand.HasWeapon)
+                if (!Owner.Body.PrimaryHand.HasWeapon && !Owner.Body.SecondaryHand.HasWeapon)
                 {
                     return false;
                 }
@@ -2479,7 +2479,7 @@ namespace BrawlerClassWrath
 
                 foreach (var group in weapon_groups)
                 {
-                    if(weapon1.Blueprint.FighterGroup.Contains(group) && weapon2.Blueprint.FighterGroup.Contains(group))
+                    if(weapon1.Blueprint.FighterGroup.Contains(group) && (weapon2 == null || weapon2.Blueprint.FighterGroup.Contains(group)))
                     {
                         return true;
                     }
