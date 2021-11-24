@@ -2312,14 +2312,24 @@ namespace BrawlerClassWrath
                 
              
             mutagen.GetComponent<AddFacts>().DoNotRestoreMissingFacts = true;
-            foreach (var c in mutagen.GetComponents<ContextRankConfig>().ToArray())
-            {
-                var newRankConfig = c;
 
-                newRankConfig.m_AdditionalArchetypes = c.m_AdditionalArchetypes.AddToArray(mutagenic_mauler.ToReference<BlueprintArchetypeReference>());
-                newRankConfig.m_Class = c.m_Class.AddToArray(BrawlerClass.ToReference<BlueprintCharacterClassReference>());
-                mutagen.ReplaceComponent(c, newRankConfig);
+            foreach (var factRef in mutagen.GetComponent<AddFacts>().Facts)
+            {
+
+                if (factRef is BlueprintAbility fact)
+                {
+                    foreach (var c in fact.GetComponents<ContextRankConfig>().ToArray())
+                    {
+                        var newRankConfig = c;
+
+                        newRankConfig.m_AdditionalArchetypes = c.m_AdditionalArchetypes.AddToArray(mutagenic_mauler.ToReference<BlueprintArchetypeReference>());
+                        newRankConfig.m_Class = c.m_Class.AddToArray(BrawlerClass.ToReference<BlueprintCharacterClassReference>());
+                        mutagen.ReplaceComponent(c, newRankConfig);
+                    }
+                }
+
             }
+
            // alchemist_mutagen.AddComponent(Helpers.Create<NewMechanics.FeatureReplacement>(f => f.replacement_feature = mutagen));
            // mutagen.SetDescription("At 1st level, a mutagenic mauler discovers how to create a mutagen that she can imbibe in order to heighten her physical prowess, though at the cost of her personality. This functions as an alchemist’s mutagen and uses the brawler’s class level as her alchemist level for this ability (alchemist levels stack with brawler levels for determining the effect of this ability). A mutagenic mauler counts as an alchemist for the purpose of imbibing a mutagen prepared by someone else.");
             var mutagen_damage_buff = CommonHelpers.CreateBuff("MutagenincMaulerDamageBonusBuff",
@@ -2402,14 +2412,25 @@ namespace BrawlerClassWrath
             
             greater_mutagen.RemoveComponents<PrerequisiteClassLevel>();
 
-            foreach (var c in greater_mutagen.GetComponents<ContextRankConfig>().ToArray())
-            {
-                var newRankConfig = c;
 
-                newRankConfig.m_AdditionalArchetypes = c.m_AdditionalArchetypes.AddToArray(mutagenic_mauler.ToReference<BlueprintArchetypeReference>());
-                newRankConfig.m_Class = c.m_Class.AddToArray(BrawlerClass.ToReference<BlueprintCharacterClassReference>());
-                greater_mutagen.ReplaceComponent(c, newRankConfig);
+
+            foreach (var factRef in greater_mutagen.GetComponent<AddFacts>().Facts)
+            {
+
+                if (factRef is BlueprintAbility fact)
+                {
+                    foreach (var c in fact.GetComponents<ContextRankConfig>().ToArray())
+                    {
+                        var newRankConfig = c;
+
+                        newRankConfig.m_AdditionalArchetypes = c.m_AdditionalArchetypes.AddToArray(mutagenic_mauler.ToReference<BlueprintArchetypeReference>());
+                        newRankConfig.m_Class = c.m_Class.AddToArray(BrawlerClass.ToReference<BlueprintCharacterClassReference>());
+                        greater_mutagen.ReplaceComponent(c, newRankConfig);
+                    }
+                }
+
             }
+   
            // alchemist_greater_mutagen.AddComponent(Helpers.Create<NewMechanics.FeatureReplacement>(f => f.replacement_feature = greater_mutagen));
         }
         // MISC
