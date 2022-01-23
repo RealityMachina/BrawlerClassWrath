@@ -399,14 +399,15 @@ namespace BrawlerClassWrath.NewMechanics
         }
     }
 
-    [AllowedOn(typeof(BlueprintUnitFact))]
+    [AllowedOn(typeof(BlueprintUnitFact), false)]
     [AllowMultipleComponents]
     [TypeId("0d2ae35019c84d03a26f6e04e84d5dd4")]
     public class OpportunistMultipleAttacks : UnitFactComponentDelegate<OpportunistData>, IGlobalRulebookHandler<RuleDealDamage>, IRulebookHandler<RuleDealDamage>, ISubscriber, IGlobalRulebookSubscriber
     {
-        [JsonProperty]
-        private int extra_attacks_used = 0;
+        [SerializeField]
+        public int extra_attacks_used = 0;
 
+        [SerializeField]
         public ContextValue num_extra_attacks;
 
         public void OnEventAboutToTrigger(RuleDealDamage evt)

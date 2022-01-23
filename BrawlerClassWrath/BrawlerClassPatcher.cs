@@ -948,7 +948,7 @@ namespace BrawlerClassWrath
                 a.LocalizedName = Helpers.CreateString($"{a.name}.Name", "Venomfist");
                 a.LocalizedDescription = Helpers.CreateString($"{a.name}.Description", "Thanks to alchemical experiments and rigorous study of venomous creatures, a venomfist has toxic unarmed strikes.");
             });
-            wild_child.m_ParentClass = BrawlerClass;
+            venomfist.m_ParentClass = BrawlerClass;
 
             createVenomousStrike();
 
@@ -1019,7 +1019,9 @@ namespace BrawlerClassWrath
                                                                                                                     dispellable: false)
                                                                                );
 
-            DiceFormula[] diceFormulas = new DiceFormula[] {new DiceFormula(1, DiceType.D4),
+            DiceFormula[] diceFormulas = new DiceFormula[] {
+                                                            new DiceFormula(1, DiceType.D3),
+                                                            new DiceFormula(1, DiceType.D4),
                                                             new DiceFormula(1, DiceType.D6),
                                                             new DiceFormula(1, DiceType.D8),
                                                             new DiceFormula(1, DiceType.D10),
@@ -1039,7 +1041,7 @@ namespace BrawlerClassWrath
                                                       }),
                                                       Helpers.CreateContextRankConfig(baseValueType: ContextRankBaseValueType.ClassLevel,
                                                                                         type: AbilityRankType.Default,
-                                                                                        progression: ContextRankProgression.StartPlusDivStep,
+                                                                                        progression: ContextRankProgression.OnePlusDivStep,
                                                                                         startLevel: 4,
                                                                                         stepLevel: 4,
                                                                                         classes: getBrawlerArray()),
@@ -1308,14 +1310,14 @@ namespace BrawlerClassWrath
                 Resources.GetBlueprint<BlueprintFeature>("5bb6dc5ce00550441880a6ff8ad4c968").Icon, 
                 FeatureGroup.None);
 
-            opportunist.ComponentsArray = new BlueprintComponent[]
+            opportunist.SetComponents(new BlueprintComponent[]
             {
                 Helpers.Create<OpportunistMultipleAttacks>(o => o.num_extra_attacks = Helpers.CreateContextValue(AbilityRankType.Default)),
                 Helpers.CreateContextRankConfig(ContextRankBaseValueType.ClassLevel, classes: getBrawlerArray(),
                                                 progression: ContextRankProgression.DelayedStartPlusDivStep,
                                                 startLevel: 19,
                                                 stepLevel: 100)
-            };
+            });
         }
 
 
@@ -2546,16 +2548,16 @@ namespace BrawlerClassWrath
                         ++evt.Result.SecondaryHand.AdditionalAttacks;
                     }
                
-                }
-                else if (__instance.Fact.GetRank() > 1)
-                {
+                } //do we need this at all?
+                //else if (__instance.Fact.GetRank() > 1)
+                //{
                    
-                    for (int i = 2; i < __instance.Fact.GetRank(); i++)
-                    {
+                //    for (int i = 2; i < __instance.Fact.GetRank(); i++)
+                //    {
                     
-                        ++evt.Result.SecondaryHand.PenalizedAttacks;
-                    }
-                }
+                //        ++evt.Result.SecondaryHand.PenalizedAttacks;
+                //    }
+                //}
          
                 return true;
             }
