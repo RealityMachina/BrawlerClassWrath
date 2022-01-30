@@ -471,8 +471,8 @@ namespace BrawlerClassWrath.Utilities
             ability.Type = type;
             ability.ActionType = actionType;
             ability.Range = range;
-            ability.LocalizedDuration = Main.MakeLocalizedString($"{name}.Duration", duration);
-            ability.LocalizedSavingThrow = Main.MakeLocalizedString($"{name}.SavingThrow", savingThrow);
+            ability.LocalizedDuration = Helpers.CreateString($"{name}.Duration", duration);
+            ability.LocalizedSavingThrow = Helpers.CreateString($"{name}.SavingThrow", savingThrow);
            
             return ability;
         }
@@ -788,8 +788,8 @@ namespace BrawlerClassWrath.Utilities
         {
             var resource = Helpers.CreateBlueprint<BlueprintAbilityResource>(name);
             resource.SetComponents(components);
-            resource.LocalizedName = Main.MakeLocalizedString(name + ".Name", displayName);
-            resource.LocalizedDescription = Main.MakeLocalizedString(name + ".Name", description);
+            resource.LocalizedName = Helpers.CreateString(name + ".Name", displayName);
+            resource.LocalizedDescription = Helpers.CreateString(name + ".Name", description);
             resource.m_Icon = icon;
             return resource;
         }

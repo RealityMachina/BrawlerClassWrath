@@ -9,7 +9,7 @@ using Kingmaker.Blueprints.Items.Armors;
 using Kingmaker.Blueprints.Items.Weapons;
 using Kingmaker.Blueprints.JsonSystem;
 using Kingmaker.Blueprints.Root;
-using Kingmaker.Blueprints.Validation;
+using Owlcat.QA.Validation;
 using Kingmaker.Designers.Mechanics.Buffs;
 using Kingmaker.Designers.Mechanics.Facts;
 using Kingmaker.ElementsSystem;
@@ -618,9 +618,9 @@ namespace BrawlerClassWrath.NewMechanics
             return context.TriggerRule<RuleCalculateAbilityParams>(rule).Result;
         }
 
-        public override void ApplyValidation(ValidationContext context)
+        public override void ApplyValidation(ValidationContext context, int parentIndex)
         {
-            base.ApplyValidation(context);
+            base.ApplyValidation(context, parentIndex);
             if (this.StatType.IsAttribute() || this.StatType == StatType.BaseAttackBonus)
                 return;
             string str = string.Join(", ", ((IEnumerable<StatType>)StatTypeHelper.Attributes).Select<StatType, string>((Func<StatType, string>)(s => s.ToString())));

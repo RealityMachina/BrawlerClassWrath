@@ -160,9 +160,9 @@ namespace BrawlerClassWrath
             BrawlerClass.m_WillSave = MonkClass.m_WillSave;
             BrawlerClass.ClassSkills = new StatType[] { StatType.SkillAthletics, StatType.SkillMobility, StatType.SkillPersuasion, StatType.SkillPerception, StatType.SkillKnowledgeWorld };
  
-            BrawlerClass.LocalizedName = Main.MakeLocalizedString("RMBrawlerName", "Brawler");
-            BrawlerClass.LocalizedDescription = Main.MakeLocalizedString("RMBralwerDesc", "Deadly even with nothing in her hands, a brawler eschews using the fighter’s heavy armor and the monk’s mysticism, focusing instead on perfecting many styles of brutal unarmed combat. Versatile, agile, and able to adapt to most enemy attacks, a brawler’s body is a powerful weapon.");
-            BrawlerClass.LocalizedDescriptionShort = Main.MakeLocalizedString("RMBralwerShortDesc", "Brawlers are fighters who've chosen to eschew armor and monk mysticism alike to practice the art of unarmed combat, learning powerful techniques like Awesome Blow.");
+            BrawlerClass.LocalizedName = Helpers.CreateString("RMBrawlerName", "Brawler");
+            BrawlerClass.LocalizedDescription = Helpers.CreateString("RMBralwerDesc", "Deadly even with nothing in her hands, a brawler eschews using the fighter’s heavy armor and the monk’s mysticism, focusing instead on perfecting many styles of brutal unarmed combat. Versatile, agile, and able to adapt to most enemy attacks, a brawler’s body is a powerful weapon.");
+            BrawlerClass.LocalizedDescriptionShort = Helpers.CreateString("RMBralwerShortDesc", "Brawlers are fighters who've chosen to eschew armor and monk mysticism alike to practice the art of unarmed combat, learning powerful techniques like Awesome Blow.");
             BrawlerClass.m_Difficulty = 3;
             BrawlerClass.StartingGold = MonkClass.StartingGold;
             BrawlerClass.PrimaryColor = FighterClass.PrimaryColor;
@@ -680,8 +680,8 @@ namespace BrawlerClassWrath
              "If the combat maneuver check succeeds, the opponent takes damage as if the brawler hit it with the close weapon she is wielding or an unarmed strike," +
              " it is knocked flying 10 feet in a direction of attack.");
             awesomeAbility.m_Icon = Helpers.GetIcon("bdf58317985383540920c723db07aa3b"); //pummeling bully
-            awesomeAbility.LocalizedDuration = Main.MakeLocalizedString($"{awesomeAbility.name}.Duration", "");
-            awesomeAbility.LocalizedSavingThrow = Main.MakeLocalizedString($"{awesomeAbility.name}.SavingThrow", "");
+            awesomeAbility.LocalizedDuration = Helpers.CreateString($"{awesomeAbility.name}.Duration", "");
+            awesomeAbility.LocalizedSavingThrow = Helpers.CreateString($"{awesomeAbility.name}.SavingThrow", "");
             awesomeAbility.Type = AbilityType.Special;
             awesomeAbility.CanTargetEnemies = true;
             awesomeAbility.CanTargetSelf = false;
