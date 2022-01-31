@@ -83,6 +83,8 @@ namespace BrawlerClassWrath
         static public BlueprintArchetype wild_child;
         static public BlueprintFeatureSelection animal_companion;
         static public BlueprintFeatureSelection wildchild_mountedcombat_feats;
+        static public BlueprintFeatureSelection wildchild_mountedcombat_feats6;
+        static public BlueprintFeatureSelection wildchild_mountedcombat_feats10;
 
         static public BlueprintArchetype venomfist;
         static public BlueprintFeature[] venomous_strike = new BlueprintFeature[5];
@@ -876,10 +878,10 @@ namespace BrawlerClassWrath
 
             wild_child.AddFeatures = new LevelEntry[] {Helpers.LevelEntry(1, animal_companion, wildchild_mountedcombat_feats),
                                                              Helpers.LevelEntry(2, wildchild_mountedcombat_feats),
-                                                             Helpers.LevelEntry(6, wildchild_mountedcombat_feats),
-                                                             Helpers.LevelEntry(10, wildchild_mountedcombat_feats),
-                                                             Helpers.LevelEntry(14, wildchild_mountedcombat_feats),
-                                                             Helpers.LevelEntry(18, wildchild_mountedcombat_feats)
+                                                             Helpers.LevelEntry(6, wildchild_mountedcombat_feats6),
+                                                             Helpers.LevelEntry(10, wildchild_mountedcombat_feats10),
+                                                             Helpers.LevelEntry(14, wildchild_mountedcombat_feats10),
+                                                             Helpers.LevelEntry(18, wildchild_mountedcombat_feats10)
                                                             };
 
             brawler_progression.m_UIDeterminatorsGroup = brawler_progression.m_UIDeterminatorsGroup.AddToArray(animal_companion.ToReference<BlueprintFeatureBaseReference>());
@@ -892,7 +894,11 @@ namespace BrawlerClassWrath
         static void createWildChildMounted()
         {
             wildchild_mountedcombat_feats = Helpers.CreateBlueprint<BlueprintFeatureSelection>("RMWildChildMountedCombatFeats");
+            wildchild_mountedcombat_feats6 = Helpers.CreateBlueprint<BlueprintFeatureSelection>("RMWildChildMountedCombatFeats6");
+            wildchild_mountedcombat_feats10 = Helpers.CreateBlueprint<BlueprintFeatureSelection>("RMWildChildMountedCombatFeats10");
             var soheiMountedFeats = Resources.GetBlueprint<BlueprintFeatureSelection>("59bd6f915ba1dee44a8316f97fd51967");
+            var soheiMountedFeats6 = Resources.GetBlueprint<BlueprintFeatureSelection>("46e8b9c91698ac74fa3f2d283d72a970");
+            var soheiMountedFeats10 = Resources.GetBlueprint<BlueprintFeatureSelection>("8d0ea7db870327b43b44265531be256f");
 
             wildchild_mountedcombat_feats.SetName("Wild Child Bonus Feat");
             wildchild_mountedcombat_feats.SetDescription("At 1st level, 2nd level, and every 4 levels thereafter, a Wild Child can select a bonus {g|Encyclopedia:Feat}feat{/g}. These feats must be taken from the following list: Combat Reflexes, Dodge, Crane Style, Blind Fight, Improved {g|Encyclopedia:Initiative}Initiative{/g}\nAt 6th level, the following feats are added to the list: Improved Trip, Improved Disarm\nAt 10th level, the following feats are added to the list: Improved {g|Encyclopedia:Critical}Critical{/g}, Improved Blind Fight.\nA wild child need not have any of the prerequisites normally required for these feats to select them.");
@@ -903,6 +909,24 @@ namespace BrawlerClassWrath
             wildchild_mountedcombat_feats.m_AllFeatures = soheiMountedFeats.m_AllFeatures;
             wildchild_mountedcombat_feats.m_Features = soheiMountedFeats.m_Features;
 
+            wildchild_mountedcombat_feats6.SetName("Wild Child Bonus Feat");
+            wildchild_mountedcombat_feats6.SetDescription("At 1st level, 2nd level, and every 4 levels thereafter, a Wild Child can select a bonus {g|Encyclopedia:Feat}feat{/g}. These feats must be taken from the following list: Combat Reflexes, Dodge, Crane Style, Blind Fight, Improved {g|Encyclopedia:Initiative}Initiative{/g}\nAt 6th level, the following feats are added to the list: Improved Trip, Improved Disarm\nAt 10th level, the following feats are added to the list: Improved {g|Encyclopedia:Critical}Critical{/g}, Improved Blind Fight.\nA wild child need not have any of the prerequisites normally required for these feats to select them.");
+            wildchild_mountedcombat_feats6.IgnorePrerequisites = true;
+            wildchild_mountedcombat_feats6.Ranks = 1;
+            wildchild_mountedcombat_feats6.IsClassFeature = true;
+            wildchild_mountedcombat_feats6.m_Icon = soheiMountedFeats6.m_Icon;
+            wildchild_mountedcombat_feats6.m_AllFeatures = soheiMountedFeats6.m_AllFeatures;
+            wildchild_mountedcombat_feats6.m_Features = soheiMountedFeats6.m_Features;
+
+
+            wildchild_mountedcombat_feats10.SetName("Wild Child Bonus Feat");
+            wildchild_mountedcombat_feats10.SetDescription("At 1st level, 2nd level, and every 4 levels thereafter, a Wild Child can select a bonus {g|Encyclopedia:Feat}feat{/g}. These feats must be taken from the following list: Combat Reflexes, Dodge, Crane Style, Blind Fight, Improved {g|Encyclopedia:Initiative}Initiative{/g}\nAt 6th level, the following feats are added to the list: Improved Trip, Improved Disarm\nAt 10th level, the following feats are added to the list: Improved {g|Encyclopedia:Critical}Critical{/g}, Improved Blind Fight.\nA wild child need not have any of the prerequisites normally required for these feats to select them.");
+            wildchild_mountedcombat_feats10.IgnorePrerequisites = true;
+            wildchild_mountedcombat_feats10.Ranks = 1;
+            wildchild_mountedcombat_feats10.IsClassFeature = true;
+            wildchild_mountedcombat_feats10.m_Icon = soheiMountedFeats10.m_Icon;
+            wildchild_mountedcombat_feats10.m_AllFeatures = soheiMountedFeats10.m_AllFeatures;
+            wildchild_mountedcombat_feats10.m_Features = soheiMountedFeats10.m_Features;
 
         }
 
