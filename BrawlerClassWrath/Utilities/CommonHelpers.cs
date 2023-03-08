@@ -251,7 +251,7 @@ namespace BrawlerClassWrath.Utilities
             t.RangeType = range_type;
             t.ReduceHPToZero = reduce_hp_to_zero;
             t.ActionsOnInitiator = on_initiator;
-            t.WaitForAttackResolve = wait_for_attack_to_resolve;
+            //t.WaitForAttackResolve = wait_for_attack_to_resolve;
             t.OnlyOnFirstAttack = only_first_hit;
             t.CheckWeaponCategory = true;
             t.Category = weapon_category;
@@ -536,7 +536,7 @@ namespace BrawlerClassWrath.Utilities
             t.RangeType = range_type;
             t.ReduceHPToZero = reduce_hp_to_zero;
             t.ActionsOnInitiator = on_initiator;
-            t.WaitForAttackResolve = wait_for_attack_to_resolve;
+            //t.WaitForAttackResolve = wait_for_attack_to_resolve;
             t.OnlyOnFirstAttack = only_first_hit;
 
             return t;
