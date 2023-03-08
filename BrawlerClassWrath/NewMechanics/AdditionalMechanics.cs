@@ -113,12 +113,12 @@ namespace BrawlerClassWrath.NewMechanics
                     load_ok = true;
                 }
                 var body_armor = this.Owner.Body?.Armor?.MaybeArmor;
-                armor_ok = body_armor != null && required_armor.Contains(body_armor.Blueprint.ProficiencyGroup);
-                armor_ok = armor_ok || (body_armor == null && required_armor.Contains(ArmorProficiencyGroup.None));
+                armor_ok = body_armor != null && required_armor.Any(element => element == body_armor.Blueprint.ProficiencyGroup);
+                armor_ok = armor_ok || (body_armor == null && required_armor.Any(element => element == ArmorProficiencyGroup.None));
                 if (!armor_ok) // armor doesn't meet requirements but does shield?
                 {
                     var shield = this.Owner.Body?.SecondaryHand?.MaybeShield?.ArmorComponent;
-                    armor_ok = shield != null && required_armor.Contains(shield.Blueprint.ProficiencyGroup);
+                    armor_ok = shield != null && required_armor.Any(element => element == shield.Blueprint.ProficiencyGroup);
                 }
 
                 if (armor_ok && load_ok) // requirements met...
@@ -208,7 +208,7 @@ namespace BrawlerClassWrath.NewMechanics
             int i = 1;
             foreach (Feature feature in base.Owner.Progression.Features) // this SHOULDN'T include feature selections
             {
-                if (feature.Blueprint.name != Fact.Blueprint.name && feature.Blueprint.Groups.Contains(FeatureGroup.FavoriteTerrain))
+                if (feature.Blueprint.name != Fact.Blueprint.name && feature.Blueprint.Groups.Any(element => element == FeatureGroup.FavoriteTerrain))
                 {
 
                     i++;
@@ -525,7 +525,7 @@ namespace BrawlerClassWrath.NewMechanics
 
         public void OnEventAboutToTrigger(RuleCalculateWeaponStats evt)
         {
-            if (!categories.Contains(evt.Weapon.Blueprint.Category))
+            if (!categories.Any(element => element == evt.Weapon.Blueprint.Category))
             {
                 return;
             }
@@ -542,16 +542,16 @@ namespace BrawlerClassWrath.NewMechanics
 
             var wielder_size = evt.Initiator.Descriptor.State.Size;
             //scale weapon to the wielder size if need (note polymorphs do not change their size, so their weapon dice is not supposed to scale)
-            var base_damage = evt.WeaponDamageDiceOverride.HasValue ? evt.WeaponDamageDiceOverride.Value : evt.Weapon.Blueprint.BaseDamage;
+            var base_damage = evt.WeaponDamageDice.HasModifications ? evt.WeaponDamageDice.ModifiedValue : evt.WeaponDamageDice.BaseFormula;
             var base_dice = evt.Initiator.Body.IsPolymorphed ? base_damage : WeaponDamageScaleTable.Scale(base_damage, wielder_size);
-
+            //This safety check probably works as it used to thanks to Microsoftenator. All I know is WeaponDamageDiceOverride no longer exists.--Teraunce.
             var new_dice = WeaponDamageScaleTable.Scale(dice_formulas[dice_id], wielder_size);
 
             var new_dmg_avg = new_dice.MinValue(0) + new_dice.MaxValue(0);
             int current_dmg_avg = (base_dice.MaxValue(0) + base_dice.MinValue(0));
             if (new_dmg_avg > current_dmg_avg)
             {
-                evt.WeaponDamageDiceOverride = dice_formulas[dice_id];
+                evt.WeaponDamageDice.Modify(dice_formulas[dice_id], ModifierDescriptor.None);
             }
         }
 
@@ -746,7 +746,7 @@ namespace BrawlerClassWrath.NewMechanics
 
             foreach (var group in groups)
             {
-                if(caster.Body.PrimaryHand.Weapon.Blueprint.Type.FighterGroup.Contains(group) || extra_categories.Contains(caster.Body.PrimaryHand.Weapon.Blueprint.Category))
+                if(caster.Body.PrimaryHand.Weapon.Blueprint.Type.FighterGroup.Contains(group) || extra_categories.Any(element => element == caster.Body.PrimaryHand.Weapon.Blueprint.Category))
                 {
                     return true;
                 }
@@ -811,12 +811,12 @@ namespace BrawlerClassWrath.NewMechanics
 
                 bool armor_ok = false;
                 var body_armor = this.Owner.Body?.Armor?.MaybeArmor;
-                armor_ok = body_armor != null && required_armor.Contains(body_armor.Blueprint.ProficiencyGroup);
-                armor_ok = armor_ok || (body_armor == null && required_armor.Contains(ArmorProficiencyGroup.None));
+                armor_ok = body_armor != null && required_armor.Any(element => element == body_armor.Blueprint.ProficiencyGroup);
+                armor_ok = armor_ok || (body_armor == null && required_armor.Any(element => element == ArmorProficiencyGroup.None));
                 if (!armor_ok) // armor doesn't meet requirements but does shield?
                 {
                     var shield = this.Owner.Body?.SecondaryHand?.MaybeShield?.ArmorComponent;
-                    armor_ok = shield != null && required_armor.Contains(shield.Blueprint.ProficiencyGroup);
+                    armor_ok = shield != null && required_armor.Any(element => element == shield.Blueprint.ProficiencyGroup);
                 }
 
                 if (armor_ok) // requirements met...
