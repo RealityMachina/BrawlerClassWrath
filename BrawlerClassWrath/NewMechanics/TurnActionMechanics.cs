@@ -27,7 +27,7 @@ namespace BrawlerClassWrath.NewMechanics
                 return false;
             }
 
-            return abilities.Contains(ability.Blueprint) || (ability.Blueprint.Parent == null ? false : abilities.Contains(ability.Blueprint.Parent));
+            return abilities.HasItem(ability.Blueprint) || (ability.Blueprint.Parent == null ? false : abilities.HasItem(ability.Blueprint.Parent));
         }
     }
 
@@ -43,7 +43,7 @@ namespace BrawlerClassWrath.NewMechanics
                 return false;
             }
 
-            return abilities.Contains(ability.Blueprint) || (ability.Blueprint.Parent == null ? false : abilities.Contains(ability.Blueprint.Parent));
+            return abilities.HasItem(ability.Blueprint) || (ability.Blueprint.Parent == null ? false : abilities.HasItem(ability.Blueprint.Parent));
         }
     }
 
