@@ -589,7 +589,7 @@ namespace BrawlerClassWrath
                                                      new CombatManeuver[] {CombatManeuver.Trip },
                                                      new CombatManeuver[] {CombatManeuver.SunderArmor },
                                                      new CombatManeuver[] {CombatManeuver.DirtyTrickBlind, CombatManeuver.DirtyTrickEntangle, CombatManeuver.DirtyTrickSickened },
-                                                      new CombatManeuver[] {CombatManeuverTypeExtender.AwesomeBlow.ToCombatManeuverType() },
+                                                      new CombatManeuver[] {CombatManeuver.AwesomeBlow },
                                                    };
 
             var names = new string[] { "Bull Rush", "Disarm", "Trip", "Sunder", "Dirty Trick", "Awesome Blow" };
@@ -665,7 +665,7 @@ namespace BrawlerClassWrath
         {
             var text_entry = new Kingmaker.Blueprints.Root.Strings.CombatManeuverString.MyEntry
             {
-                Value = CombatManeuverTypeExtender.AwesomeBlow.ToCombatManeuverType(),
+                Value = CombatManeuver.AwesomeBlow,
                 Text = Helpers.CreateString("RMAwesomeBlow.String", "Combat Maneuver: Awesome Blow")
             };
             BlueprintRoot.Instance.LocalizedTexts.CombatManeuver.Entries = BlueprintRoot.Instance.LocalizedTexts.CombatManeuver.Entries.AddToArray(text_entry);
@@ -694,10 +694,10 @@ namespace BrawlerClassWrath
             awesomeAbility.MaterialComponent = tripAction.MaterialComponent;
             awesomeAbility.AddComponent<AbilityEffectRunAction>(a =>
             {
-                a.Actions = Helpers.CreateActionList(Helpers.Create<ContextActionCombatManeuver>(c =>
+                a.Actions = Helpers.CreateActionList(Helpers.Create<ContextActionCombatManeuverCustom>(c =>
                 {
-                    c.Type = CombatManeuverTypeExtender.AwesomeBlow.ToCombatManeuverType();
-                    c.OnSuccess = Helpers.CreateActionList();
+                    c.Type = CombatManeuver.AwesomeBlow;
+                    c.Success = Helpers.CreateActionList();
                 })
                 );
             });
@@ -723,7 +723,7 @@ namespace BrawlerClassWrath
             awesome_blow.AddComponent(Helpers.Create<ManeuverTrigger>(m =>
             {
                 m.OnlySuccess = true;
-                m.ManeuverType = CombatManeuverTypeExtender.AwesomeBlow.ToCombatManeuverType();
+                m.ManeuverType = CombatManeuver.AwesomeBlow;
                 m.Action = Helpers.CreateActionList(Helpers.Create<ContextActionDealWeaponDamage>(),
                                                     Helpers.Create<ContextActionForceMove>(f => f.distance_dice = new ContextDiceValue() {
                                                         DiceType = Kingmaker.RuleSystem.DiceType.Zero,

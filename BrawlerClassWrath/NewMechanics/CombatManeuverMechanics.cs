@@ -36,20 +36,7 @@ using System.Threading.Tasks;
 
 namespace BrawlerClassWrath.NewMechanics
 {
-    public enum CombatManeuverTypeExtender
-    {
-        None,
-        AwesomeBlow = 100
-    }
-
-    public static partial class Extensions
-    {
-        public static CombatManeuver ToCombatManeuverType(this CombatManeuverTypeExtender extra_maneuver)
-        {
-            int value = (int)extra_maneuver;
-            return (CombatManeuver)value;
-        }
-    }
+  
 
     namespace CombatManeuverMechanics
     {
@@ -125,7 +112,7 @@ namespace BrawlerClassWrath.NewMechanics
             {
                 switch (__instance.Type)
                 {
-                    case (CombatManeuver)CombatManeuverTypeExtender.AwesomeBlow:
+                    case CombatManeuver.AwesomeBlow:
                         {
                             if (__instance.Target.CanBeKnockedOff())
                             {
@@ -204,7 +191,7 @@ namespace BrawlerClassWrath.NewMechanics
                 if (__instance.AutoFailure //already includes immunity to specific maneuvers 
                     || __instance.Target.Descriptor.State.HasCondition(UnitCondition.ImmuneToCombatManeuvers)
                     || (__instance.Target.Descriptor.State.HasConditionImmunity(UnitCondition.Prone)
-                        && (__instance.Type == CombatManeuverTypeExtender.AwesomeBlow.ToCombatManeuverType()) //__instance.Type == CombatManeuver.Trip || 
+                        && (__instance.Type == CombatManeuver.AwesomeBlow) //__instance.Type == CombatManeuver.Trip || 
                         )
                     )
                 {
@@ -214,8 +201,8 @@ namespace BrawlerClassWrath.NewMechanics
             }
         }
 
-
-        [HarmonyPatch(typeof(ContextActionCombatManeuver))]
+        //REDUNDANT, new patch added awesome blow type
+ /*       [HarmonyPatch(typeof(ContextActionCombatManeuver))]
         [HarmonyPatch("RunAction", MethodType.Normal)]
         class ContextActionCombatManeuver__RunAction__Patch
         {
@@ -238,7 +225,7 @@ namespace BrawlerClassWrath.NewMechanics
                 return true;
             }
         }
-
+ */
 
 
     }
